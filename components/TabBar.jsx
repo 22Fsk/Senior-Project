@@ -3,6 +3,12 @@ import React from 'react'
 import { AntDesign, Feather } from '@expo/vector-icons';
 
 const TabBar = ({ state, descriptors, navigation }) => {
+
+    // Check if the active route is "map"
+    const activeRouteName = state.routes[state.index].name;
+    if (activeRouteName === 'map') {
+        return null; // Hide the tab bar when "map" is active
+    }
     const primaryColor = '#673ab7';
     const greyColor = '#222';
 
