@@ -1,20 +1,10 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import InteractiveMap from '../../components/interactiveMap';
+import { StyleSheet, Text, View } from 'react-native'
+import React from 'react'
+import { useRouter } from 'expo-router';
+import { useEffect } from 'react';
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <InteractiveMap />
-    </View>
-  );
+const map = () => {
+
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default map

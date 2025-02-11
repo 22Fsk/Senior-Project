@@ -1,6 +1,7 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React from 'react'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React from 'react';
 import { AntDesign, Feather } from '@expo/vector-icons';
+import { useRouter } from 'expo-router'; // Import useRouter
 
 const TabBar = ({ state, descriptors, navigation }) => {
 
@@ -9,15 +10,34 @@ const TabBar = ({ state, descriptors, navigation }) => {
     if (activeRouteName === 'map') {
         return null; // Hide the tab bar when "map" is active
     }
+    
     const primaryColor = '#673ab7';
     const greyColor = '#222';
-
+    const router = useRouter(); // Get the router instance
+    
     const icons = {
         index: (props) => <AntDesign name="home" size={26} color={greyColor} {...props} />, 
         create: (props) => <AntDesign name="pluscircleo" size={26} color={greyColor} {...props} />, 
         explore: (props) => <Feather name="compass" size={26} color={greyColor} {...props} />, 
         profile: (props) => <AntDesign name="user" size={26} color={greyColor} {...props} />, 
         map: (props) => <Feather name="map-pin" size={30} {...props} />, 
+    };
+
+    const onPress = (route) => {
+        // Navigate to 'map' screen
+        if (route.name === 'map') {
+            router.push('/mappage'); // Navigate to the "mappage" screen directly
+        } else {
+            // Normal tab press behavior
+            const event = navigation.emit({
+                type: 'tabPress',
+                target: route.key,
+                canPreventDefault: true,
+            });
+            if (!isFocused && !event.defaultPrevented) {
+                navigation.navigate(route.name, route.params);
+            }
+        }
     };
 
     return (
@@ -29,24 +49,6 @@ const TabBar = ({ state, descriptors, navigation }) => {
                 const label = options.tabBarLabel ?? options.title ?? route.name;
                 const isFocused = state.index === index;
 
-                const onPress = () => {
-                    const event = navigation.emit({
-                        type: 'tabPress',
-                        target: route.key,
-                        canPreventDefault: true,
-                    });
-                    if (!isFocused && !event.defaultPrevented) {
-                        navigation.navigate(route.name, route.params);
-                    }
-                };
-
-                const onLongPress = () => {
-                    navigation.emit({
-                        type: 'tabLongPress',
-                        target: route.key,
-                    });
-                };
-
                 return (
                     <TouchableOpacity
                         key={route.name}
@@ -55,8 +57,7 @@ const TabBar = ({ state, descriptors, navigation }) => {
                         accessibilityState={isFocused ? { selected: true } : {}}
                         accessibilityLabel={options.tabBarAccessibilityLabel}
                         testID={options.tabBarButtonTestID}
-                        onPress={onPress}
-                        onLongPress={onLongPress}
+                        onPress={() => onPress(route)} // Pass the route to onPress
                     >
                         <View style={route.name === "map" ? styles.mapIconBackground : null}>
                             {icons[route.name]({ color: isFocused ? primaryColor : greyColor })}
