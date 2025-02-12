@@ -9,7 +9,7 @@ const Index = () => {
 
   const [view, setView] = useState('history'); // 'history' or 'doctors'
   const [serach, setSearch] = useState('');
-  const snapPoints = ['20%', '50%', '95%'];
+  const snapPoints = ['20%','50%', '95%'];
 
   const historyList = ['S40-2049', 'S40-060', 'Food Court'];
   const doctorsList = ['Dr. John Doe', 'Dr. Jane Smith', 'Dr. Sarah Johnson'];
@@ -29,7 +29,10 @@ const Index = () => {
             <InteractiveMap />
         </View>
 
-      <BottomSheet ref={sheetRef} snapPoints={snapPoints} backgroundStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.8)' }} handleIndicatorStyle={{ backgroundColor: 'rgb(199, 199, 199)' }}>
+      <BottomSheet ref={sheetRef} snapPoints={snapPoints} 
+      backgroundStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.8)' }} 
+      handleIndicatorStyle={{ backgroundColor: 'rgb(199, 199, 199)' }}
+      >
         <BottomSheetView style={styles.btm} backgroundStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }} >
           <ScrollView contentContainerStyle={{ gap: 15 }}>
             {/** Search Bar */}

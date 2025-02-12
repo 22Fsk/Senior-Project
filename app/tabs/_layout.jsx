@@ -15,9 +15,9 @@ const _layout = () => {
         }} 
         />
         <Tabs.Screen
-        name="create"
+        name="DrSchedule"
         options={{
-            title:"Create"
+            title:"Facilities"
         }} 
         />
         <Tabs.Screen
@@ -27,15 +27,15 @@ const _layout = () => {
         }} 
         />
         <Tabs.Screen
-        name="explore"
+        name="alerts"
         options={{
-            title:"Explore"
+            title:"Alerts"
         }} 
         />
         <Tabs.Screen
-        name="profile"
+        name="settings"
         options={{
-            title:"Profile"
+            title:"Settings"
         }} 
         />
     </Tabs>

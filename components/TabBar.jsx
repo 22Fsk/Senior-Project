@@ -1,6 +1,6 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React from 'react';
-import { AntDesign, Feather } from '@expo/vector-icons';
+import { AntDesign, Feather, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router'; // Import useRouter
 
 const TabBar = ({ state, descriptors, navigation }) => {
@@ -17,9 +17,9 @@ const TabBar = ({ state, descriptors, navigation }) => {
     
     const icons = {
         index: (props) => <AntDesign name="home" size={26} color={greyColor} {...props} />, 
-        create: (props) => <AntDesign name="pluscircleo" size={26} color={greyColor} {...props} />, 
-        explore: (props) => <Feather name="compass" size={26} color={greyColor} {...props} />, 
-        profile: (props) => <AntDesign name="user" size={26} color={greyColor} {...props} />, 
+        DrSchedule: (props) => <AntDesign name="user" size={26} color={greyColor} {...props} />, 
+        alerts: (props) => <MaterialIcons name="notifications-none" size={26} color={greyColor} {...props} />, 
+        settings: (props) => <Feather name="settings" size={24} color="black" />, 
         map: (props) => <Feather name="map-pin" size={30} {...props} />, 
     };
 

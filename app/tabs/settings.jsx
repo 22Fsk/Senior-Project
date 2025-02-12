@@ -2,7 +2,7 @@ import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 import ColorList from '../../components/ColorList'
 
-const profile = () => {
+const settings = () => {
   return (
     <View>
       <ColorList color="brown" />
@@ -10,6 +10,6 @@ const profile = () => {
   )
 }
 
-export default profile
+export default settings
 
 const styles = StyleSheet.create({})
