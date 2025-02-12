@@ -9,7 +9,7 @@ const Index = () => {
 
   const [view, setView] = useState('history'); // 'history' or 'doctors'
   const [serach, setSearch] = useState('');
-  const snapPoints = ['30%', '50%', '95%'];
+  const snapPoints = ['20%', '50%', '95%'];
 
   const historyList = ['S40-2049', 'S40-060', 'Food Court'];
   const doctorsList = ['Dr. John Doe', 'Dr. Jane Smith', 'Dr. Sarah Johnson'];
@@ -29,8 +29,8 @@ const Index = () => {
             <InteractiveMap />
         </View>
 
-      <BottomSheet ref={sheetRef} snapPoints={snapPoints}>
-        <BottomSheetView style={styles.btm}>
+      <BottomSheet ref={sheetRef} snapPoints={snapPoints} backgroundStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.8)' }} handleIndicatorStyle={{ backgroundColor: 'rgb(199, 199, 199)' }}>
+        <BottomSheetView style={styles.btm} backgroundStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }} >
           <ScrollView contentContainerStyle={{ gap: 15 }}>
             {/** Search Bar */}
             <View style={styles.searchBar}>
@@ -59,7 +59,7 @@ const Index = () => {
                   style={buttonStyles}
                   onPress={() => handleButtonPress('history')}
                 >
-                  <MaterialIcons name='history' size={24} color='black' style={styles.buttonIcon}/>
+                  <MaterialIcons name='history' size={24} color={view === 'history' ? "rgb(94, 195, 253)" : "black"} style={styles.buttonIcon}/>
                   <Text style={styles.buttonText}>History</Text>
                 </TouchableOpacity>
 
@@ -71,7 +71,7 @@ const Index = () => {
                   ]}
                   onPress={() => handleButtonPress('doctors')}
                 >
-                  <Fontisto name='person' size={20} color='black' style={styles.buttonIcon}/>
+                  <Fontisto name='person' size={20} color={view === 'doctors' ? "rgb(94, 195, 253)" : "black"} style={styles.buttonIcon}/>
                   <Text style={styles.buttonText}>Doctors</Text>
                 </TouchableOpacity>
               </View>
@@ -131,11 +131,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'gray',
+    borderColor: 'white',
     backgroundColor: 'white',
+    marginHorizontal: 4,
+    marginTop: 10,
     padding: 4,
     paddingLeft: 10,
-    borderRadius: 30,
+    borderRadius: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 }, // Horizontal and vertical shadow positioning
+    shadowOpacity: 0.1, // Adjust for subtle effect
+    shadowRadius: 4, // Blur radius
+    elevation: 3, // Needed for Android
   },
   searchIcon: {
     padding: 8,
@@ -157,7 +164,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 7,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: 'rgba(244, 244, 244, 0.74)',
     borderRadius: 15,
     marginBottom: 50,
   },
@@ -193,6 +200,8 @@ const styles = StyleSheet.create({
     marginTop: 20,
     width: '100%',
     padding: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    borderRadius: 15,
   },
   title: {
     fontSize: 20,
