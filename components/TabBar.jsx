@@ -34,7 +34,7 @@ const TabBar = ({ state, descriptors, navigation }) => {
                 target: route.key,
                 canPreventDefault: true,
             });
-            if (!isFocused && !event.defaultPrevented) {
+            if (state.index !== state.routes.findIndex(r => r.name === route.name) && !event.defaultPrevented) {
                 navigation.navigate(route.name, route.params);
             }
         }
@@ -57,7 +57,7 @@ const TabBar = ({ state, descriptors, navigation }) => {
                         accessibilityState={isFocused ? { selected: true } : {}}
                         accessibilityLabel={options.tabBarAccessibilityLabel}
                         testID={options.tabBarButtonTestID}
-                        onPress={() => onPress(route)} // Pass the route to onPress
+                        onPress={() => onPress(route, index)} // Pass the route to onPress
                     >
                         <View style={route.name === "map" ? styles.mapIconBackground : null}>
                             {icons[route.name]({ color: isFocused ? primaryColor : greyColor })}
