@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, Text, View, TextInput, TouchableOpacity, Animate
 import React, { useState, useRef } from 'react';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
-import { Feather, Ionicons } from '@expo/vector-icons';
+import { Feather, Fontisto, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import InteractiveMap from '../../components/interactiveMap';
 const Index = () => {
   const sheetRef = useRef(null); // Define the sheetRef here
@@ -11,7 +11,7 @@ const Index = () => {
   const [serach, setSearch] = useState('');
   const snapPoints = ['30%', '50%', '95%'];
 
-  const historyList = ['History Item 1', 'History Item 2', 'History Item 3'];
+  const historyList = ['S40-2049', 'S40-060', 'Food Court'];
   const doctorsList = ['Dr. John Doe', 'Dr. Jane Smith', 'Dr. Sarah Johnson'];
 
   const handleButtonPress = (viewType) => {
@@ -28,9 +28,11 @@ const Index = () => {
         <View>
             <InteractiveMap />
         </View>
+
       <BottomSheet ref={sheetRef} snapPoints={snapPoints}>
         <BottomSheetView style={styles.btm}>
           <ScrollView contentContainerStyle={{ gap: 15 }}>
+            {/** Search Bar */}
             <View style={styles.searchBar}>
               <View style={styles.searchIcon}>
                 <Feather name="search" size={20} color={'gray'} />
@@ -43,7 +45,8 @@ const Index = () => {
                 placeholderTextColor="gray"
               />
               {serach && (
-                <Pressable style={styles.closeIcon}>
+                <Pressable style={styles.closeIcon}
+                onPress={() => setSearch('')}>
                   <Ionicons name="close" size={20} color={'black'} />
                 </Pressable>
               )}
@@ -56,6 +59,7 @@ const Index = () => {
                   style={buttonStyles}
                   onPress={() => handleButtonPress('history')}
                 >
+                  <MaterialIcons name='history' size={24} color='black' style={styles.buttonIcon}/>
                   <Text style={styles.buttonText}>History</Text>
                 </TouchableOpacity>
 
@@ -67,6 +71,7 @@ const Index = () => {
                   ]}
                   onPress={() => handleButtonPress('doctors')}
                 >
+                  <Fontisto name='person' size={20} color='black' style={styles.buttonIcon}/>
                   <Text style={styles.buttonText}>Doctors</Text>
                 </TouchableOpacity>
               </View>
@@ -76,19 +81,35 @@ const Index = () => {
                 <View style={styles.listContainer}>
                   <Text style={styles.title}>History</Text>
                   {historyList.map((item, index) => (
-                    <Text key={index} style={styles.listItem}>{item}</Text>
+                    <Pressable 
+                      key={index} 
+                      style={styles.listItemBox} 
+                      onPress={() => console.log(`Selected: ${item}`)} // Replace this with navigation or action
+                    >
+                      <Text style={styles.listItemText}>{item}</Text>
+                      <Ionicons name="chevron-forward-outline" size={20} color="gray" />
+                    </Pressable>
                   ))}
                 </View>
               ) : view === 'doctors' ? (
                 <View style={styles.listContainer}>
                   <Text style={styles.title}>Doctors</Text>
                   {doctorsList.map((item, index) => (
-                    <Text key={index} style={styles.listItem}>{item}</Text>
+                    <Pressable 
+                      key={index} 
+                      style={styles.listItemBox} 
+                      onPress={() => console.log(`Selected: ${item}`)} // Replace this with navigation or action
+                    >
+                      <Text style={styles.listItemText}>{item}</Text>
+                      <Ionicons name="chevron-forward-outline" size={20} color="gray" />
+                    </Pressable>
                   ))}
                 </View>
               ) : (
                 <Text style={styles.placeholder}>Select an option to view content</Text>
               )}
+
+
             </View>
           </ScrollView>
         </BottomSheetView>
@@ -135,7 +156,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 10,
+    padding: 7,
     backgroundColor: '#f5f5f5',
     borderRadius: 15,
     marginBottom: 50,
@@ -145,15 +166,21 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 20,
     backgroundColor: 'rgba(199, 199, 199, 0.5)',  // Set your desired background color here
-    borderRadius: 22,            // Optional: to give rounded corners
+    borderRadius: 15,            // Optional: to give rounded corners
     padding: 2,   
   },
   button: {
-    paddingVertical: 10,
-    paddingHorizontal: '15%',
-    borderRadius: 18,
+    flexDirection: 'row', // Align icon and text horizontally
+    alignItems: 'center', // Center align items
+    justifyContent: 'center', // Center everything inside
+    paddingVertical: '10',
+    paddingHorizontal: '11.5%',
+    borderRadius: 12,
     backgroundColor: 'rgba(199, 199, 199, 0.1)',
     margin: 2,
+  },
+  buttonIcon: {
+    marginRight: 8, // Adjust spacing between icon and text
   },
   selectedButton: {
     backgroundColor: 'white', // Blue when selected
@@ -178,4 +205,22 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
   },
+  listItemBox: {
+    flexDirection: 'row',  // Align text and icon in one line
+    justifyContent: 'space-between', // Space out text and arrow icon
+    alignItems: 'center',  // Center items vertically
+    padding: 12,  // Add padding for a better look
+    backgroundColor: 'white',  // Box background color
+    borderRadius: 10,  // Rounded corners
+    marginBottom: 8,  // Space between items
+    shadowColor: '#000',  // Add subtle shadow
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,  // Elevation for Android shadow effect
+  },
+  listItemText: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  
 });
