@@ -2,6 +2,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React from 'react';
 import { AntDesign, Feather, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router'; // Import useRouter
+import colors from './ColorTamp';
 
 const TabBar = ({ state, descriptors, navigation }) => {
 
@@ -11,7 +12,7 @@ const TabBar = ({ state, descriptors, navigation }) => {
         return null; // Hide the tab bar when "map" is active
     }
     
-    const primaryColor = '#673ab7';
+    const primaryColor = 'rgb(94, 195, 253)';
     const greyColor = '#222';
     const router = useRouter(); // Get the router instance
     
@@ -60,9 +61,9 @@ const TabBar = ({ state, descriptors, navigation }) => {
                         onPress={() => onPress(route)} // Pass the route to onPress
                     >
                         <View style={route.name === "map" ? styles.mapIconBackground : null}>
-                            {icons[route.name]({ color: isFocused ? primaryColor : greyColor })}
+                            {icons[route.name]({ color: isFocused ? colors.primary : greyColor })}
                         </View>
-                        <Text style={{ color: isFocused ? primaryColor : greyColor, fontSize: 11 }}>{label}</Text>
+                        <Text style={{ color: isFocused ? colors.primary : greyColor, fontSize: 11 }}>{label}</Text>
                     </TouchableOpacity>
                 );
             })}
@@ -104,7 +105,7 @@ const styles = StyleSheet.create({
         width: 70,
         height: 70,
         borderRadius: 40,
-        backgroundColor: '#673ab7',
+        backgroundColor: colors.primary,
         justifyContent: 'center',
         alignItems: 'center',
     },

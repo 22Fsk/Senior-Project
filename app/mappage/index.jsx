@@ -4,6 +4,8 @@ import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
 import { Feather, Fontisto, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import InteractiveMap from '../../components/interactiveMap';
+import colors from '../../components/ColorTamp';
+
 const Index = () => {
   const sheetRef = useRef(null); // Define the sheetRef here
 
@@ -62,7 +64,7 @@ const Index = () => {
                   style={buttonStyles}
                   onPress={() => handleButtonPress('history')}
                 >
-                  <MaterialIcons name='history' size={24} color={view === 'history' ? "rgb(94, 195, 253)" : "black"} style={styles.buttonIcon}/>
+                  <MaterialIcons name='history' size={24} color={view === 'history' ? colors.primary : "black"} style={styles.buttonIcon}/>
                   <Text style={styles.buttonText}>History</Text>
                 </TouchableOpacity>
 
@@ -74,7 +76,7 @@ const Index = () => {
                   ]}
                   onPress={() => handleButtonPress('doctors')}
                 >
-                  <Fontisto name='person' size={20} color={view === 'doctors' ? "rgb(94, 195, 253)" : "black"} style={styles.buttonIcon}/>
+                  <Fontisto name='person' size={20} color={view === 'doctors' ? colors.primary: "black"} style={styles.buttonIcon}/>
                   <Text style={styles.buttonText}>Doctors</Text>
                 </TouchableOpacity>
               </View>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, TextInput, FlatList } from 'react-native';
 import { AntDesign, Feather, Ionicons } from '@expo/vector-icons';
 import { Pressable } from 'react-native';
+import colors from '../../components/ColorTamp';
 
 const DoctorList = () => {
   // Example doctor data
@@ -42,7 +43,7 @@ const DoctorList = () => {
         <AntDesign 
           name={item.isFavorite ? 'star' : 'staro'} 
           size={24} 
-          color={item.isFavorite ? 'gold' : 'gray'} 
+          color={item.isFavorite ? colors.primary : 'gray'} 
         />
       </TouchableOpacity>
     </View>
@@ -56,7 +57,7 @@ const DoctorList = () => {
                 <Feather name="search" size={20} color={'gray'} />
               </View>
               <TextInput
-                placeholder='Search for places...'
+                placeholder='Search for facilities...'
                 value={search}
                 onChangeText={value => setSearch(value)}
                 style={styles.searchInput}
@@ -148,6 +149,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 10,
     color: '#333',
+    marginTop: 10,
   },
   doctorItem: {
     marginBottom:4,

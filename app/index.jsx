@@ -5,6 +5,7 @@ import { hp, wp } from '../helpers/common';
 import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '../constants/theme';
 import { useRouter } from "expo-router";
+//import colors from '../components/ColorTamp';
 
 export default function Index() {
   const router = useRouter();
@@ -33,7 +34,7 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,  // Make sure container takes up the full screen
-    backgroundColor: '#024f3e',
+    backgroundColor: 'rgb(94, 195, 253)',
   },
   imageContainer: {
     position: 'absolute',  // Keeps the image at the top layer
