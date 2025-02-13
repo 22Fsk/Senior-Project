@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Clipboard } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { Entypo, Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { Linking } from 'react-native';
-import { FlatList } from 'react-native';
+import { Entypo, MaterialIcons } from '@expo/vector-icons';
 import colors from '../../components/ColorTamp';
+import { FlatList } from 'react-native';
 
 const DoctorDetails = () => {
   const { id, name } = useLocalSearchParams(); // Get passed doctor data
@@ -96,12 +95,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   profileImage: {
-    width: 120,
-    height: 120,
+    width: 125,
+    height: 125,
     borderRadius: 60, // Circular image
     alignSelf: 'center',
     marginTop: 40,
     marginBottom: 20,
+    borderColor: colors.primary,
+    borderWidth: 5,
   },
   title: {
     fontSize: 22,
@@ -140,7 +141,7 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontWeight: 'bold',
   },
-  loc:{
+  loc: {
     fontSize: 16,
     fontWeight: 'bold',
   },
