@@ -33,7 +33,7 @@ const Index = () => {
 
       <BottomSheet ref={sheetRef} snapPoints={snapPoints} 
       backgroundStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.8)' }} 
-      handleIndicatorStyle={{ backgroundColor: 'rgb(199, 199, 199)' }}
+      handleIndicatorStyle={{ backgroundColor: 'rgb(199, 199, 199)'}}
       >
         <BottomSheetView style={styles.btm} backgroundStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }} >
           <ScrollView contentContainerStyle={{ gap: 15 }}>

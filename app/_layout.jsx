@@ -12,6 +12,10 @@ export default function RootLayout() {
       name="home/index"
       options={{headerShown: false}}
       />
+      <Stack.Screen 
+      name="doctor/contactDetails" 
+      options={{ title: "Doctor Details" }} 
+      />
     </Stack>
   )
 }

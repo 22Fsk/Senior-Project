@@ -1,75 +1,77 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, TextInput, FlatList } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, TextInput, FlatList, Pressable } from 'react-native';
 import { AntDesign, Feather, Ionicons } from '@expo/vector-icons';
-import { Pressable } from 'react-native';
+import { useRouter } from "expo-router";
 import colors from '../../components/ColorTamp';
 
 const DoctorList = () => {
+  const router = useRouter();
+
   // Example doctor data
   const [doctors, setDoctors] = useState([
     { id: '1', name: 'Dr. John Doe', isFavorite: false },
     { id: '2', name: 'Dr. Jane Smith', isFavorite: false },
     { id: '3', name: 'Dr. Sarah Johnson', isFavorite: false },
-    // Add more doctors as needed
   ]);
+
   const [search, setSearch] = useState('');
 
+  const handleDoctorClick = (doctor) => {
+    router.push({
+      pathname: "/doctor/contactDetails",
+      params: { id: doctor.id, name: doctor.name },
+    });
+    
+  };
+
   const toggleFavorite = (id) => {
-    setDoctors(prevDoctors => 
-      prevDoctors.map(doctor => 
+    setDoctors(prevDoctors =>
+      prevDoctors.map(doctor =>
         doctor.id === id ? { ...doctor, isFavorite: !doctor.isFavorite } : doctor
       )
     );
   };
 
-  const filteredDoctors = doctors.filter(doctor => 
+  const filteredDoctors = doctors.filter(doctor =>
     doctor.name.toLowerCase().includes(search.toLowerCase())
   );
 
   const favoriteDoctors = filteredDoctors.filter(doctor => doctor.isFavorite);
   const otherDoctors = filteredDoctors.filter(doctor => !doctor.isFavorite).sort((a, b) => a.name.localeCompare(b.name));
 
-  const handleDoctorClick = (doctor) => {
-    // Handle the click on the doctor's name (e.g., navigate to a detailed page)
-    alert(`Clicked on ${doctor.name}`); // Replace this with your desired action (navigation, etc.)
-  };
-
   const renderItem = ({ item }) => (
-    <View style={styles.doctorItem}>
-      <TouchableOpacity onPress={() => handleDoctorClick(item)}>
-        <Text style={styles.doctorName}>{item.name}</Text>
-      </TouchableOpacity>
+    <TouchableOpacity style={styles.doctorItem} onPress={() => handleDoctorClick(item)}>
+      <Text style={styles.doctorName}>{item.name}</Text>
       <TouchableOpacity onPress={() => toggleFavorite(item.id)}>
-        <AntDesign 
-          name={item.isFavorite ? 'star' : 'staro'} 
-          size={24} 
-          color={item.isFavorite ? colors.primary : 'gray'} 
+        <AntDesign
+          name={item.isFavorite ? 'star' : 'staro'}
+          size={24}
+          color={item.isFavorite ? colors.primary : 'gray'}
         />
       </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
     <View style={styles.container}>
       {/** Search Bar */}
       <View style={styles.searchBar}>
-              <View style={styles.searchIcon}>
-                <Feather name="search" size={20} color={'gray'} />
-              </View>
-              <TextInput
-                placeholder='Search for facilities...'
-                value={search}
-                onChangeText={value => setSearch(value)}
-                style={styles.searchInput}
-                placeholderTextColor="gray"
-              />
-              {search && (
-                <Pressable style={styles.closeIcon}
-                onPress={() => setSearch('')}>
-                  <Ionicons name="close" size={20} color={'black'} />
-                </Pressable>
-              )}
+        <View style={styles.searchIcon}>
+          <Feather name="search" size={20} color={'gray'} />
         </View>
+        <TextInput
+          placeholder="Search for doctors..."
+          value={search}
+          onChangeText={value => setSearch(value)}
+          style={styles.searchInput}
+          placeholderTextColor="gray"
+        />
+        {search && (
+          <Pressable style={styles.closeIcon} onPress={() => setSearch('')}>
+            <Ionicons name="close" size={20} color={'black'} />
+          </Pressable>
+        )}
+      </View>
 
       {/* Favorites Section */}
       {favoriteDoctors.length > 0 && (
@@ -99,6 +101,7 @@ const DoctorList = () => {
 };
 
 export default DoctorList;
+
 
 const styles = StyleSheet.create({
   container: {
