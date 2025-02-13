@@ -14,13 +14,13 @@ const DoctorDetails = () => {
   }
 
   const doctorEmail = 'JaneSmith@uob.bh';
-  const doctorLocation = '2051, University Building';
+  const doctorLocation = 'S40-2051';
   const doctorSchedule = 'See Schedule'; // Example schedule
 
   const copyToClipboard = async () => {
     await Clipboard.setString(doctorEmail);
     alert('Email copied to clipboard!');
-    setTimeout(() => setCopyIconColor(colors.primary), 200); // Reset color after 1 second
+    setTimeout(() => setCopyIconColor(colors.primary), 50); // Reset color
   };
 
   const openLocation = () => {
@@ -66,8 +66,9 @@ const DoctorDetails = () => {
                   </TouchableOpacity>
                 </View>
               ) : item.isLocation ? (
-                <TouchableOpacity onPress={openLocation}>
-                  <Text style={styles.value}>{item.value}</Text>
+                <TouchableOpacity onPress={openLocation} style={styles.row}>
+                  <Text style={styles.loc}>{item.value}</Text>
+                  <Entypo name="chevron-right" size={20} color='gray' />
                 </TouchableOpacity>
               ) : item.isSchedule ? (
                 <TouchableOpacity onPress={openSchedule} style={styles.row}>
@@ -137,6 +138,10 @@ const styles = StyleSheet.create({
   schedule: {
     fontSize: 16,
     color: colors.primary,
+    fontWeight: 'bold',
+  },
+  loc:{
+    fontSize: 16,
     fontWeight: 'bold',
   },
   row: {
