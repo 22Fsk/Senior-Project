@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 60, // Circular image
     alignSelf: 'center',
-    marginTop: 50,
+    marginTop: 40,
     marginBottom: 20,
   },
   title: {
