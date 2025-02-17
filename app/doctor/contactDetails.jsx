@@ -1,153 +1,68 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Clipboard } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Entypo, MaterialIcons } from '@expo/vector-icons';
 import colors from '../../components/ColorTamp';
-import { FlatList } from 'react-native';
 
 const DoctorDetails = () => {
-  const { id, name } = useLocalSearchParams(); // Get passed doctor data
+  const { id, name } = useLocalSearchParams();
+  const router = useRouter();
+  const [copyIconColor, setCopyIconColor] = useState('gray');
 
-  if (!id || !name) {
-    return <Text>No doctor information available</Text>;
-  }
+  if (!id || !name) return <Text>No doctor information available</Text>;
 
-  const doctorEmail = 'JaneSmith@uob.bh';
-  const doctorLocation = 'S40-2051';
-  const doctorSchedule = 'See Schedule'; // Example schedule
+  const doctorDetails = [
+    { label: 'Email', value: 'JaneSmith@uob.bh', isEmail: true },
+    { label: 'Department', value: 'Computer Science' },
+    { label: 'Office', value: 'S40-2051', isLocation: true },
+    { label: 'Schedule', value: 'See Schedule', isSchedule: true },
+  ];
 
   const copyToClipboard = async () => {
-    await Clipboard.setString(doctorEmail);
+    await Clipboard.setString(doctorDetails[0].value);
     alert('Email copied to clipboard!');
-    setTimeout(() => setCopyIconColor(colors.primary), 50); // Reset color
   };
-
-  const openLocation = () => {
-    alert('Clicked location!');
-  };
-
-  const openSchedule = () => {
-    alert('Clicked schedule!');
-  };
-
-  const [copyIconColor, setCopyIconColor] = useState('gray'); // Set initial color
-
-  // Doctor details data
-  const doctorDetails = [
-    { label: 'Email', value: doctorEmail, isEmail: true },
-    { label: 'Department', value: 'Computer Science' },
-    { label: 'Office', value: doctorLocation, isLocation: true },
-    { label: 'Schedule', value: doctorSchedule, isSchedule: true },
-  ];
 
   return (
     <View style={styles.container}>
-      {/* Profile Image */}
-      <Image
-        source={require('../../assets/images/welcome.png')} // Replace with the actual image URL
-        style={styles.profileImage}
-      />
-
+      <Image source={require('../../assets/images/welcome.png')} style={styles.profileImage} />
       <Text style={styles.title}>{name}</Text>
-
-      {/* Doctor Details List */}
       <FlatList
         data={doctorDetails}
+        keyExtractor={(item) => item.label}
         renderItem={({ item }) => (
           <View style={styles.detailItem}>
-            <Text style={styles.label}>{item.label}</Text> {/* Title above the box */}
-            <View style={styles.detailBox}>
-              {item.isEmail ? (
-                <View style={styles.row}>
-                  <Text style={styles.value}>{item.value}</Text>
-                  <TouchableOpacity onPress={copyToClipboard}>
-                    <MaterialIcons name="content-copy" size={20} color={copyIconColor} />
-                  </TouchableOpacity>
-                </View>
-              ) : item.isLocation ? (
-                <TouchableOpacity onPress={openLocation} style={styles.row}>
-                  <Text style={styles.loc}>{item.value}</Text>
-                  <Entypo name="chevron-right" size={20} color='gray' />
-                </TouchableOpacity>
-              ) : item.isSchedule ? (
-                <TouchableOpacity onPress={openSchedule} style={styles.row}>
-                  <Text style={styles.schedule}>{item.value}</Text>
+            <Text style={styles.label}>{item.label}</Text>
+            <TouchableOpacity
+              style={styles.detailBox}
+              onPress={() => item.isSchedule ? router.push(`/doctor/schedule?id=${id}`) : null}>
+              <View style={styles.row}>
+                <Text style={item.isSchedule ? styles.schedule : styles.value}>{item.value}</Text>
+                {item.isEmail && (
+                  <MaterialIcons name="content-copy" size={20} color={copyIconColor} onPress={copyToClipboard} />
+                )}
+                {(item.isLocation || item.isSchedule) && (
                   <Entypo name="chevron-right" size={20} color={colors.primary} />
-                </TouchableOpacity>
-              ) : (
-                <Text style={styles.value}>{item.value}</Text>
-              )}
-            </View>
+                )}
+              </View>
+            </TouchableOpacity>
           </View>
         )}
-        keyExtractor={(item) => item.label}
       />
     </View>
   );
 };
 
-export default DoctorDetails;
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#f5f5f5',
-  },
-  profileImage: {
-    width: 125,
-    height: 125,
-    borderRadius: 60, // Circular image
-    alignSelf: 'center',
-    marginTop: 40,
-    marginBottom: 20,
-    borderColor: colors.primary,
-    borderWidth: 5,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginTop: 0,
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 5, // Space between label and value
-    marginLeft: 2,
-  },
-  detailItem: {
-    marginVertical: 10,
-  },
-  detailBox: {
-    backgroundColor: '#fff',
-    padding: 15,
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2, // For Android shadow
-    marginHorizontal: 2,
-  },
-  value: {
-    fontSize: 16,
-    color: '#555',
-  },
-  schedule: {
-    fontSize: 16,
-    color: colors.primary,
-    fontWeight: 'bold',
-  },
-  loc: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between', // Add space between value and icon
-  },
+  container: { flex: 1, padding: 20, backgroundColor: '#f5f5f5' },
+  profileImage: { width: 125, height: 125, borderRadius: 60, alignSelf: 'center', marginBottom: 20, borderColor: colors.primary, borderWidth: 5 },
+  title: { fontSize: 22, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 },
+  label: { fontSize: 15, fontWeight: 'bold', marginBottom: 5, marginLeft: 2 },
+  detailItem: { marginVertical: 10 },
+  detailBox: { backgroundColor: '#fff', padding: 15, borderRadius: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.2, shadowRadius: 2, elevation: 2 },
+  value: { fontSize: 16, color: '#555' },
+  schedule: { fontSize: 16, color: colors.primary, fontWeight: 'bold' },
+  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
 });
+
+export default DoctorDetails;
