@@ -127,15 +127,17 @@ const styles = StyleSheet.create({
   },
   cell: {
     flex: 1,
-    height: 60,
-    borderWidth: 0.5,
-    borderColor: '#ddd',
+    height: 50,
+    borderWidth: 0,
+    borderRightWidth:0.5,
+    borderBottomWidth:0.5,
     backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
     paddingTop: 10,
-    borderRadius: 2,
     position: 'relative',
+    borderBottomColor: 'black',
+    borderRightColor: 'rgb(211, 211, 211)',
   },
   activeCell: {
     backgroundColor: colors.primary, // blue color for active event
@@ -150,7 +152,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1, // Ensure the bottom half is on top
-    borderRadius: 0
   },
   halfCellTop: {
     position: 'absolute',
