@@ -12,7 +12,7 @@ const schedule = () => {
     { day: 'W', start: 10, end: 11 },
     { day: 'T', start: 15, end: 16 },
     { day: 'S', start: 9.5, end: 10.5 }, // 9:30 to 10:30
-    { day: 'W', start: 9.5, end: 10.5 }, // 9:30 to 10:30
+    { day: 'H', start: 9.5, end: 10.5 }, // 9:30 to 10:30
   ];
 
   const hours = Array.from({ length: 12 }, (_, i) => i + 8); // 8 AM to 8 PM
