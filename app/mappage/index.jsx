@@ -5,6 +5,8 @@ import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler
 import { Feather, Fontisto, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import InteractiveMap from '../../components/interactiveMap';
 import colors from '../../components/ColorTamp';
+import MapView from 'react-native-maps';
+//import floorMap from '../floors/level0.jeojson';
 
 const Index = () => {
   const sheetRef = useRef(null); // Define the sheetRef here
