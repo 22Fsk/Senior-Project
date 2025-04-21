@@ -3,22 +3,33 @@ import { Text, View, Image, Pressable } from "react-native";
 import { StyleSheet } from "react-native";
 import { hp, wp } from '../helpers/common';
 import { LinearGradient } from 'expo-linear-gradient';
-import { theme } from '../constants/theme';
 import { useRouter } from "expo-router";
-//import colors from '../components/ColorTamp';
+import { theme } from '../constants/theme';
+import { useEffect } from "react";
+import * as Location from "expo-location";
+
 
 export default function Index() {
   const router = useRouter();
+
+  // Ask for location access permission
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Permission to access location was denied');
+        return;
+      }
+  
+      // Optionally get the user's current location
+      let location = await Location.getCurrentPositionAsync({});
+      console.log(location);
+    })();
+  }, []);
+  
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-      {/* Linear Gradient
-      <LinearGradient
-        colors={['rgba(2, 79, 62, 0.1)', 'rgba(2, 79, 62, 0.5)', 'rgba(2, 79, 62, 0.7)', '#024f3e']}
-        style={styles.gradient}
-        start={{ x: 0.5, y: 0 }}
-        end={{ x: 0.5, y: 0.8 }}
-      /> */}
       {/* Content */}
       <View style={styles.contentContainer}>
         <Text style={styles.title}>Smart Map</Text>
