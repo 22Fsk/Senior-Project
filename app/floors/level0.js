@@ -169,7 +169,8 @@ export default {
           ]
         ],
         "type": "Polygon"
-      }
+      },
+      "id": 4
     },
     {
       "type": "Feature",
@@ -243,7 +244,8 @@ export default {
       "type": "Feature",
       "properties": {
         "name": "Women's Restroom",
-        "type": "restroom"
+        "type": "restroom",
+        "gender": "women"
       },
       "geometry": {
         "coordinates": [
@@ -271,7 +273,8 @@ export default {
           ]
         ],
         "type": "Polygon"
-      }
+      },
+      "id": 7
     },
     {
       "type": "Feature",
@@ -480,7 +483,8 @@ export default {
       "type": "Feature",
       "properties": {
         "name": "IS Head of Department",
-        "type": "office"
+        "type": "office",
+        "doctor": "Dr. Esra Ahmed Wali"
       },
       "geometry": {
         "coordinates": [
@@ -508,7 +512,8 @@ export default {
           ]
         ],
         "type": "Polygon"
-      }
+      },
+      "id": 14
     },
     {
       "type": "Feature",
@@ -924,7 +929,8 @@ export default {
       "type": "Feature",
       "properties": {
         "name": "CS Head of Department",
-        "type": "office"
+        "type": "office",
+        "Doctor": "Dr. Abdulla Ahmed Al-Asaadi"
       },
       "geometry": {
         "coordinates": [
@@ -952,7 +958,8 @@ export default {
           ]
         ],
         "type": "Polygon"
-      }
+      },
+      "id": 27
     },
     {
       "type": "Feature",
@@ -1026,7 +1033,8 @@ export default {
       "type": "Feature",
       "properties": {
         "name": "CE Head of Department",
-        "type": "office"
+        "type": "office",
+        "doctor": "Dr. Aysha Mohamed Al-Sayed"
       },
       "geometry": {
         "coordinates": [
@@ -1054,13 +1062,15 @@ export default {
           ]
         ],
         "type": "Polygon"
-      }
+      },
+      "id": 30
     },
     {
       "type": "Feature",
       "properties": {
         "name": "Men's Restroom",
-        "type": "restroom"
+        "type": "restroom",
+        "gender": "men"
       },
       "geometry": {
         "coordinates": [
@@ -1088,7 +1098,8 @@ export default {
           ]
         ],
         "type": "Polygon"
-      }
+      },
+      "id": 31
     },
     {
       "type": "Feature",
@@ -1128,7 +1139,8 @@ export default {
       "type": "Feature",
       "properties": {
         "name": "Women's Restroom",
-        "type": "restroom"
+        "type": "restroom",
+        "gender": "women"
       },
       "geometry": {
         "coordinates": [
@@ -1156,7 +1168,8 @@ export default {
           ]
         ],
         "type": "Polygon"
-      }
+      },
+      "id": 33
     },
     {
       "type": "Feature",
@@ -1228,7 +1241,9 @@ export default {
     },
     {
       "type": "Feature",
-      "properties": {},
+      "properties": {
+        "type": "wall"
+      },
       "geometry": {
         "coordinates": [
           [
@@ -1578,7 +1593,9 @@ export default {
     },
     {
       "type": "Feature",
-      "properties": {},
+      "properties": {
+        "type": "wall"
+      },
       "geometry": {
         "coordinates": [
           [
@@ -1591,11 +1608,14 @@ export default {
           ]
         ],
         "type": "LineString"
-      }
+      },
+      "id": 37
     },
     {
       "type": "Feature",
-      "properties": {},
+      "properties": {
+        "type": "wall"
+      },
       "geometry": {
         "coordinates": [
           [
@@ -1608,11 +1628,14 @@ export default {
           ]
         ],
         "type": "LineString"
-      }
+      },
+      "id": 38
     },
     {
       "type": "Feature",
-      "properties": {},
+      "properties": {
+        "type": "wall"
+      },
       "geometry": {
         "coordinates": [
           [
@@ -1625,7 +1648,8 @@ export default {
           ]
         ],
         "type": "LineString"
-      }
+      },
+      "id": 39
     },
     {
       "type": "Feature",

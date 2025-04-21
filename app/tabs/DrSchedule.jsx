@@ -3,18 +3,36 @@ import { StyleSheet, Text, View, TouchableOpacity, TextInput, FlatList, Pressabl
 import { AntDesign, Feather, Ionicons } from '@expo/vector-icons';
 import { useRouter } from "expo-router";
 import colors from '../../components/ColorTamp';
+import { db } from '../../firebaseConfig';
+import { useEffect } from 'react';
+import { collection, getDocs } from 'firebase/firestore';
+
 
 const DoctorList = () => {
   const router = useRouter();
 
-  // Example doctor data
-  const [doctors, setDoctors] = useState([
-    { id: '1', name: 'Dr. John Doe', isFavorite: false },
-    { id: '2', name: 'Dr. Jane Smith', isFavorite: false },
-    { id: '3', name: 'Dr. Sarah Johnson', isFavorite: false },
-  ]);
+  const [doctors, setDoctors] = useState([]);
 
   const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "doctors")); // or "doctors" if you use that
+        const fetchedDoctors = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          isFavorite: false,
+          ...doc.data(),
+        }));
+        setDoctors(fetchedDoctors);
+      } catch (error) {
+        console.error("Error fetching doctors: ", error);
+      }
+    };
+  
+    fetchDoctors();
+  }, []);
+  
 
   const handleDoctorClick = (doctor) => {
     router.push({

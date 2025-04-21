@@ -1,21 +1,44 @@
 import { Pressable, StyleSheet, Text, View, TextInput, TouchableOpacity, Animated } from 'react-native';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
 import { Feather, Fontisto, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import InteractiveMap from '../../components/interactiveMap';
 import colors from '../../components/ColorTamp';
 import MapView from 'react-native-maps';
-//import floorMap from '../floors/level0.jeojson';
+import floorMap from '../floors/level0';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useLocalSearchParams } from 'expo-router';
+
+
+
 
 const Index = () => {
-  const sheetRef = useRef(null); // Define the sheetRef here
 
-  const [view, setView] = useState('history'); // 'history' or 'doctors'
-  const [serach, setSearch] = useState('');
+  // load saved history on start
+  useEffect(() => {
+    const loadHistory = async () => {
+      try {
+        const stored = await AsyncStorage.getItem('roomHistory');
+        if (stored) {
+          setHistoryList(JSON.parse(stored));
+        }
+      } catch (err) {
+        console.log('Error loading history:', err);
+      }
+    };
+  
+    loadHistory();
+  }, []);
+
+  const { office } = useLocalSearchParams(); 
+  const sheetRef = useRef(null); // Define the sheetRef here
+  const mapRef = useRef();
+  const [view, setView] = useState('history'); 
+  const [search, setSearch] = useState('');
   const snapPoints = ['20%','50%', '95%'];
 
-  const historyList = ['S40-2049', 'S40-060', 'Food Court'];
+  const [historyList, setHistoryList] = useState([]);
   const doctorsList = ['Dr. John Doe', 'Dr. Jane Smith', 'Dr. Sarah Johnson'];
 
   const handleButtonPress = (viewType) => {
@@ -27,13 +50,37 @@ const Index = () => {
     view === 'history' ? styles.selectedButton : null
   ];
 
+  const filteredRooms = floorMap.features.filter(feature => {
+    if (feature.properties?.name && feature.geometry.type === 'Polygon') {
+      return feature.properties.name.toLowerCase().includes(search.toLowerCase());
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (office && mapRef.current) {
+      const roomFeature = floorMap.features.find(
+        feature => feature.properties.name === office
+      );
+  
+      if (roomFeature && mapRef.current.zoomToRoom) {
+        setTimeout(() => {
+          mapRef.current.zoomToRoom(roomFeature);
+        }, 500); // delay allows map to mount
+      }
+    }
+  }, [office]);
+  
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
         <View>
-            <InteractiveMap />
+            <InteractiveMap ref={mapRef}/>
         </View>
 
-      <BottomSheet ref={sheetRef} snapPoints={snapPoints} 
+      <BottomSheet 
+      ref={sheetRef} 
+      snapPoints={snapPoints} 
       backgroundStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.8)' }} 
       handleIndicatorStyle={{ backgroundColor: 'rgb(199, 199, 199)'}}
       >
@@ -46,18 +93,51 @@ const Index = () => {
               </View>
               <TextInput
                 placeholder='Search for places...'
-                value={serach}
+                value={search}
                 onChangeText={value => setSearch(value)}
                 style={styles.searchInput}
                 placeholderTextColor="gray"
               />
-              {serach && (
+              {search && (
                 <Pressable style={styles.closeIcon}
                 onPress={() => setSearch('')}>
                   <Ionicons name="close" size={20} color={'black'} />
                 </Pressable>
               )}
             </View>
+
+            {search.length > 0 && (
+  <View style={styles.listContainer}>
+    <Text style={styles.title}>Search Results</Text>
+    {filteredRooms.length === 0 ? (
+      <Text style={styles.placeholder}>No matching rooms found.</Text>
+    ) : (
+      filteredRooms.map((room, index) => (
+        <Pressable
+          key={index}
+          style={styles.listItemBox}
+          onPress={() => {
+            mapRef.current?.zoomToRoom(room);  // Zoom to the selected room
+            sheetRef.current?.snapToIndex(0);         // Close the bottom sheet
+            const updatedHistory = [room.properties.name, ...historyList.filter(item => item !== room.properties.name)].slice(0, 5);
+            setHistoryList(updatedHistory);
+
+            // Save to AsyncStorage
+            AsyncStorage.setItem('roomHistory', JSON.stringify(updatedHistory)).catch(err =>
+              console.log('Error saving history:', err)
+            );
+          }}
+        >
+          <Text style={styles.listItemText}>{room.properties.name}</Text>
+          <Ionicons name="chevron-forward-outline" size={20} color="gray" />
+        </Pressable>
+      ))
+    )}
+  </View>
+)}
+
+
+          {!search.length && (
 
             <View style={styles.catContainer}>
               <View style={styles.buttonContainer}>
@@ -118,6 +198,7 @@ const Index = () => {
 
 
             </View>
+          )}
           </ScrollView>
         </BottomSheetView>
       </BottomSheet>

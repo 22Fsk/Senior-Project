@@ -3,24 +3,59 @@ import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList } from 'react
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Entypo, MaterialIcons } from '@expo/vector-icons';
 import colors from '../../components/ColorTamp';
+import { useEffect } from 'react';
+import {doc , getDoc } from 'firebase/firestore';
+import { db } from '../../firebaseConfig';
+import floorMap from '../floors/level0';
 
 const DoctorDetails = () => {
   const { id, name } = useLocalSearchParams();
   const router = useRouter();
   const [copyIconColor, setCopyIconColor] = useState('gray');
+  const [doctorData, setDoctorData] = useState(null);
 
   if (!id || !name) return <Text>No doctor information available</Text>;
 
-  const doctorDetails = [
-    { label: 'Email', value: 'JaneSmith@uob.bh', isEmail: true },
-    { label: 'Department', value: 'Computer Science' },
-    { label: 'Office', value: 'S40-2051', isLocation: true },
+  
+
+  useEffect(() => {
+    const fetchDoctorDetails = async () => {
+      try {
+        const docRef = doc(db, 'doctors', id);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          setDoctorData(docSnap.data());
+        } else {
+          console.warn('No such doctor!');
+        }
+      } catch (error) {
+        console.error('Error fetching doctor details:', error);
+      }
+    };
+
+    if (id) fetchDoctorDetails();
+  }, [id]);
+
+  const doctorDetails = doctorData ? [
+    { label: 'Email', value: doctorData.email, isEmail: true },
+    { label: 'Department', value: doctorData.department },
+    { label: 'Office', value: doctorData.Office, isLocation: true },
     { label: 'Schedule', value: 'See Schedule', isSchedule: true },
-  ];
+  ] : [];
+
+  if (!doctorData) return <Text style={{ padding: 20 }}>Loading doctor details...</Text>;
+
+
 
   const copyToClipboard = async () => {
     await Clipboard.setString(doctorDetails[0].value);
     alert('Email copied to clipboard!');
+  };
+
+  const handleOfficeClick = (officeName) => {
+    // Navigate to the map page with the room feature
+    router.push(`/mappage?office=${encodeURIComponent(officeName)}`);
   };
 
   return (
@@ -35,7 +70,12 @@ const DoctorDetails = () => {
             <Text style={styles.label}>{item.label}</Text>
             <TouchableOpacity
               style={styles.detailBox}
-              onPress={() => item.isSchedule ? router.push(`/doctor/schedule?id=${id}`) : null}>
+              onPress={() => item.isLocation 
+                ? handleOfficeClick(item.value)  // Handle office name click
+                : item.isSchedule 
+                  ? router.push(`/doctor/schedule?id=${id}`) 
+                  : null
+              }>
               <View style={styles.row}>
                 <Text style={item.isSchedule ? styles.schedule : styles.value}>{item.value}</Text>
                 {item.isEmail && (
