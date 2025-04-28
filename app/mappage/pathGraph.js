@@ -1,62 +1,62 @@
-
-export function buildGraph(paths) {
+export function buildGraph(pathFeatures) {
     const graph = {};
-    const nodeCoordinates = {};
-    const pathIds = {}; // To store the path line IDs
   
-    paths.forEach((feature) => {
-      if (feature.geometry.type === 'LineString') {
-        const coords = feature.geometry.coordinates;
-        const pathId = feature.properties?.id;  // Assuming path has an 'id' property
+    function addEdge(a, b) {
+      const keyA = `${a[0]},${a[1]}`;
+      const keyB = `${b[0]},${b[1]}`;
+      const dist = Math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2);
   
-        for (let i = 0; i < coords.length - 1; i++) {
-          const fromCoord = coords[i];
-          const toCoord = coords[i + 1];
+      if (!graph[keyA]) graph[keyA] = {};
+      if (!graph[keyB]) graph[keyB] = {};
   
-          const fromKey = JSON.stringify(fromCoord);
-          const toKey = JSON.stringify(toCoord);
+      graph[keyA][keyB] = dist;
+      graph[keyB][keyA] = dist;
+    }
   
-          const distance = Math.sqrt(
-            Math.pow(fromCoord[0] - toCoord[0], 2) +
-            Math.pow(fromCoord[1] - toCoord[1], 2)
-          );
-  
-          if (!graph[fromKey]) graph[fromKey] = {};
-          if (!graph[toKey]) graph[toKey] = {};
-  
-          graph[fromKey][toKey] = distance;
-          graph[toKey][fromKey] = distance;
-  
-          nodeCoordinates[fromKey] = { latitude: fromCoord[1], longitude: fromCoord[0] };
-          nodeCoordinates[toKey] = { latitude: toCoord[1], longitude: toCoord[0] };
-  
-          // Store path ID for the line segment
-          if (!pathIds[fromKey]) pathIds[fromKey] = [];
-          if (!pathIds[toKey]) pathIds[toKey] = [];
-          pathIds[fromKey].push(pathId);
-          pathIds[toKey].push(pathId);
-        }
+    pathFeatures.forEach(f => {
+      const coords = f.geometry.coordinates;
+      for (let i = 0; i < coords.length - 1; i++) {
+        addEdge(coords[i], coords[i + 1]);
       }
     });
   
-    return { graph, nodeCoordinates, pathIds };
+    return graph;
   }
   
-  export function dijkstra(graph, start, end, pathIds) {
+  export function getClosestNode(target, pathFeatures) {
+    let closest = null;
+    let minDist = Infinity;
+  
+    pathFeatures.forEach(feature => {
+      feature.geometry.coordinates.forEach(coord => {
+        const [lng, lat] = coord;
+        const dist = Math.sqrt(
+          (target.latitude - lat) ** 2 +
+          (target.longitude - lng) ** 2
+        );
+        if (dist < minDist) {
+          minDist = dist;
+          closest = { lat, lng, key: `${lng},${lat}` };
+        }
+      });
+    });
+  
+    return closest;
+  }  
+  
+  export function dijkstra(graph, start, end) {
     const distances = {};
-    const previous = {};
-    const queue = new Set(Object.keys(graph));
+    const prev = {};
+    const pq = new Set(Object.keys(graph));
   
-    for (const node of queue) {
-      distances[node] = node === start ? 0 : Infinity;
-    }
+    Object.keys(graph).forEach(n => {
+      distances[n] = Infinity;
+    });
+    distances[start] = 0;
   
-    while (queue.size > 0) {
-      const current = [...queue].reduce((a, b) =>
-        distances[a] < distances[b] ? a : b
-      );
-  
-      queue.delete(current);
+    while (pq.size > 0) {
+      const current = [...pq].reduce((a, b) => distances[a] < distances[b] ? a : b);
+      pq.delete(current);
   
       if (current === end) break;
   
@@ -64,31 +64,25 @@ export function buildGraph(paths) {
         const alt = distances[current] + graph[current][neighbor];
         if (alt < distances[neighbor]) {
           distances[neighbor] = alt;
-          previous[neighbor] = current;
+          prev[neighbor] = current;
         }
       }
     }
   
     const path = [];
-    let curr = end;
-    while (curr) {
-      path.unshift(curr);
-      curr = previous[curr];
+    let u = end;
+    while (u) {
+      path.unshift(u);
+      u = prev[u];
     }
-  
-    // Get path line IDs from pathIds mapping
-    const pathLineIds = [];
-    for (let i = 0; i < path.length - 1; i++) {
-      const from = path[i];
-      const to = path[i + 1];
-  
-      // Get the IDs of path lines between the nodes
-      const lineIds = pathIds[from]?.filter((id) => pathIds[to]?.includes(id));
-      if (lineIds) {
-        pathLineIds.push(...lineIds);
-      }
-    }
-  
-    return { path, pathLineIds };
+    return path;
   }
+  
+  export function pathToCoords(path) {
+    return path.map(key => {
+      const [lng, lat] = key.split(',').map(Number);
+      return { latitude: lat, longitude: lng };
+    });
+  }
+  
   

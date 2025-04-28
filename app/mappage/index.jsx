@@ -9,11 +9,29 @@ import MapView from 'react-native-maps';
 import floorMap from '../floors/level0';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalSearchParams } from 'expo-router';
-
-
-
+import * as Location from 'expo-location';
 
 const Index = () => {
+  const [userLocation, setUserLocation] = useState(null);
+  const [routeCoords, setRouteCoords] = useState(null);
+
+
+  useEffect(() => {
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        console.log('Permission denied for location');
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({});
+      setUserLocation({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+    })();
+  }, []);
+
 
   // load saved history on start
   useEffect(() => {
@@ -70,12 +88,25 @@ const Index = () => {
       }
     }
   }, [office]);
+
+  const getCentroid = (coordinates) => {
+    let lat = 0, lon = 0, total = coordinates[0].length;
+    coordinates[0].forEach(coord => {
+      lon += coord[0];
+      lat += coord[1];
+    });
+    return {
+      latitude: lat / total,
+      longitude: lon / total
+    };
+  };
+  
   
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
         <View>
-            <InteractiveMap ref={mapRef}/>
+            <InteractiveMap ref={mapRef} routeCoords={routeCoords}/>
         </View>
 
       <BottomSheet 
@@ -126,6 +157,15 @@ const Index = () => {
             AsyncStorage.setItem('roomHistory', JSON.stringify(updatedHistory)).catch(err =>
               console.log('Error saving history:', err)
             );
+
+            // Draw route
+            const roomCenter = getCentroid(room.geometry.coordinates);
+            if (userLocation) {
+              setRouteCoords([
+                userLocation,
+                roomCenter
+              ]);
+            }
           }}
         >
           <Text style={styles.listItemText}>{room.properties.name}</Text>
