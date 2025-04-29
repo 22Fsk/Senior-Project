@@ -4,16 +4,10 @@ import MapView, { Polygon, Marker, Polyline } from 'react-native-maps';
 import * as Location from 'expo-location';
 import floorMap from '../app/floors/level0'; // GeoJSON
 import MapViewDirections from 'react-native-maps-directions';
-import {
-  buildGraph,
-  getClosestNode,
-  dijkstra,
-  pathToCoords,
-} from '../app/mappage/pathGraph';
-26.047859, 50.509877
+
 const InteractiveMap = forwardRef((props, ref) => {
   const mapRef = useRef();
-  const GOOGLE_MAPS_APIKEY = 'AIzaSyBAw4L8WWlFuW_Q1KJPo72eaNqDGpQoIkQ';
+  const GOOGLE_MAPS_APIKEY = '';
   //const [userLocation, setUserLocation] = useState(null);
   const userLocation = {latitude: 26.048311,longitude: 50.509834};
 
@@ -35,17 +29,164 @@ const InteractiveMap = forwardRef((props, ref) => {
   const pathFeatures = floorMap.features.filter(
     feature => feature.geometry.type === 'LineString' && feature.properties.type === 'path'
   );
-
-  const graph = buildGraph(pathFeatures);
-
-  const getRoomCenter = (feature) => {
-    const coords = feature.geometry.coordinates[0]; // assuming Polygon
-    const lats = coords.map(c => c[1]);
-    const lngs = coords.map(c => c[0]);
-    const lat = (Math.min(...lats) + Math.max(...lats)) / 2;
-    const lng = (Math.min(...lngs) + Math.max(...lngs)) / 2;
+  const toKey = ({ latitude, longitude }) => {
+    if (latitude == null || longitude == null) {
+      console.warn('Invalid coordinates passed to toKey:', { latitude, longitude });
+      return null; // Or throw an error
+    }
+    return `${latitude.toFixed(6)},${longitude.toFixed(6)}`;
+  };
+  
+  const fromKey = (key) => {
+    if (!key || typeof key !== 'string') {
+      console.warn('Invalid key passed to fromKey:', key);
+      return { latitude: 0, longitude: 0 }; // or throw error
+    }
+    const [lat, lng] = key.split(',').map(Number);
     return { latitude: lat, longitude: lng };
   };
+  
+
+  const buildGraph = (floorMap) => {
+    const graph = {};
+    const allNodes = [];
+  
+    // Step 1: Add nodes from each path feature
+    floorMap.features.forEach(feature => {
+      if (feature.geometry.type === 'LineString' && feature.properties.type === 'path') {
+        const path = feature.geometry.coordinates.map(([x, y]) => ({
+          latitude: y,
+          longitude: x,
+        }));
+  
+        for (let i = 0; i < path.length - 1; i++) {
+          const from = path[i];
+          const to = path[i + 1];
+  
+          const fromKey = toKey(from);
+          const toKeyStr = toKey(to);
+  
+          if (!fromKey || !toKeyStr) continue;
+  
+          graph[fromKey] = graph[fromKey] || [];
+          graph[toKeyStr] = graph[toKeyStr] || [];
+  
+          graph[fromKey].push(toKeyStr);
+          graph[toKeyStr].push(fromKey);
+        }
+  
+        // Add all points to global node list
+        path.forEach(point => {
+          const key = toKey(point);
+          if (key) allNodes.push({ key, point });
+        });
+      }
+    });
+  
+    // Step 2: Connect nodes that are very close to each other (across different paths)
+    const threshold = 0.000015; // ~1.6 meters
+    for (let i = 0; i < allNodes.length; i++) {
+      for (let j = i + 1; j < allNodes.length; j++) {
+        const a = allNodes[i];
+        const b = allNodes[j];
+  
+        const dist = euclideanDistance(a.point, b.point);
+  
+        if (dist < threshold && a.key !== b.key) {
+          graph[a.key] = graph[a.key] || [];
+          graph[b.key] = graph[b.key] || [];
+  
+          if (!graph[a.key].includes(b.key)) graph[a.key].push(b.key);
+          if (!graph[b.key].includes(a.key)) graph[b.key].push(a.key);
+        }
+      }
+    }
+  
+    return graph;
+  };
+  
+  
+  const findClosestGraphNode = (graph, point) => {
+    let closest = null;
+    let minDist = Infinity;
+  
+    for (const key in graph) {
+      const node = fromKey(key);
+      const dist = euclideanDistance(node, point);
+      if (dist < minDist) {
+        minDist = dist;
+        closest = key;
+      }
+    }
+  
+    return closest;
+  };
+  
+  
+  
+  const euclideanDistance = (a, b) => {
+    return Math.sqrt(Math.pow(b.latitude - a.latitude, 2) + Math.pow(b.longitude - a.longitude, 2));
+  };
+  
+  const aStar = (graph, startKey, goalKey) => {
+    const openSet = [startKey];
+    const cameFrom = {};
+    const gScore = { [startKey]: 0 };
+    const fScore = { [startKey]: euclideanDistance(fromKey(startKey), fromKey(goalKey)) };
+  
+    while (openSet.length > 0) {
+      const current = openSet.reduce((lowest, node) => (
+        fScore[node] < fScore[lowest] ? node : lowest
+      ), openSet[0]);
+  
+      if (current === goalKey) {
+        const path = [];
+        let currentNode = goalKey;
+        while (currentNode !== startKey) {
+          path.push(fromKey(currentNode));
+          currentNode = cameFrom[currentNode];
+        }
+        path.push(fromKey(startKey));
+        return path.reverse();
+      }
+  
+      openSet.splice(openSet.indexOf(current), 1);
+  
+      for (const neighborKey of graph[current] || []) {
+        const tentativeG = gScore[current] + euclideanDistance(fromKey(current), fromKey(neighborKey));
+      
+        if (!(neighborKey in gScore) || tentativeG < gScore[neighborKey]) {
+          cameFrom[neighborKey] = current;
+          gScore[neighborKey] = tentativeG;
+          fScore[neighborKey] = tentativeG + euclideanDistance(fromKey(neighborKey), fromKey(goalKey));
+      
+          if (!openSet.includes(neighborKey)) openSet.push(neighborKey);
+        }
+      }
+      
+    }
+  
+    return [];
+  };  
+
+  const findClosestNode = (graph, point) => {
+    let closestNode = null;
+    let minDistance = Infinity;
+  
+    Object.keys(graph).forEach(key => {
+      const [lat, lng] = key.split(',').map(Number);
+      const node = { latitude: lat, longitude: lng };
+      const distance = euclideanDistance(node, point);
+      if (distance < minDistance) {
+        closestNode = key; // return the key, not the full object
+        minDistance = distance;
+      }
+    });
+  
+    return closestNode;
+  };
+  
+  
   
 
   useImperativeHandle(ref, () => ({
@@ -83,90 +224,42 @@ const InteractiveMap = forwardRef((props, ref) => {
     })();
   }, []);
 
-  function haversineDistance(coord1, coord2) {
-    const R = 6371; // Earth radius in km
-    const dLat = (coord2.latitude - coord1.latitude) * Math.PI / 180;
-    const dLng = (coord2.longitude - coord1.longitude) * Math.PI / 180;
-    const a = Math.sin(dLat / 2) ** 2 +
-              Math.cos(coord1.latitude * Math.PI / 180) * Math.cos(coord2.latitude * Math.PI / 180) *
-              Math.sin(dLng / 2) ** 2;
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  }
-
-  function getPolygonCentroid(polygon) {
-    const coords = polygon.coordinates[0]; // First ring
-    let x = 0, y = 0;
-    coords.forEach(coord => {
-      x += coord[0];
-      y += coord[1];
-    });
-    const len = coords.length;
-    return [x / len, y / len];
-  }
-  
   
   const handleRoomPress = (roomFeature) => {
     setSelectedRoom(roomFeature);
-    const roomCenter = getPolygonCentroid(roomFeature.geometry);
-    const roomCoord = { latitude: roomCenter[1], longitude: roomCenter[0] };
-    const roomKey = `${roomCoord.longitude},${roomCoord.latitude}`;
-
-    console.log("Room clicked:", roomFeature.properties.name);
-    console.log("Room key:", roomKey);
   
-    if (!userLocation) {
-      console.warn("User location not available yet.");
-      return;
-    }
+    const graph = buildGraph(floorMap);
   
-    const userCoord = {
-      latitude: userLocation.latitude,
-      longitude: userLocation.longitude
+    // STEP 1: Snap user location to closest path node
+    const userSnapKey = findClosestGraphNode(graph, userLocation);
+  
+    // STEP 2: Snap room center to closest path node
+    const coords = roomFeature.geometry.coordinates[0];
+    const roomCenter = {
+      latitude: coords.map(c => c[1]).reduce((a, b) => a + b, 0) / coords.length,
+      longitude: coords.map(c => c[0]).reduce((a, b) => a + b, 0) / coords.length,
     };
-    
-    const userKey = `${userCoord.longitude},${userCoord.latitude}`;
-    console.log("User key:", userKey);
+    const roomSnapKey = findClosestGraphNode(graph, roomCenter);
   
-    const userClosest = getClosestNode(userCoord, pathFeatures);
-    const roomClosest = getClosestNode(roomCoord, pathFeatures);
-    const userClosestKey = `${userClosest.lng},${userClosest.lat}`;
-    const roomClosestKey = `${roomClosest.lng},${roomClosest.lat}`;
+    // STEP 3: Pathfind using A*
+    const path = aStar(graph, userSnapKey, roomSnapKey);
   
-    console.log("User closest key:", userClosestKey);
-    console.log("Room closest key:", roomClosestKey);
-  
-    // Build graph
-    const graph = buildGraph(pathFeatures);
-  
-    // Add edges from user and room to closest path nodes
-    const distUserToClosest = haversineDistance(userCoord, { latitude: userClosest.lat, longitude: userClosest.lng });
-    if (!graph[userKey]) graph[userKey] = {};
-    if (!graph[userClosestKey]) graph[userClosestKey] = {};
-    graph[userKey][userClosestKey] = distUserToClosest;
-    graph[userClosestKey][userKey] = distUserToClosest;
-  
-    const distRoomToClosest = haversineDistance(roomCoord, { latitude: roomClosest.lat, longitude: roomClosest.lng });
-    if (!graph[roomKey]) graph[roomKey] = {};
-    if (!graph[roomClosestKey]) graph[roomClosestKey] = {};
-    graph[roomKey][roomClosestKey] = distRoomToClosest;
-    graph[roomClosestKey][roomKey] = distRoomToClosest;
-  
-    // Run Dijkstra
-    const shortestPath = dijkstra(graph, userKey, roomKey);
-    console.log("Shortest Path:", shortestPath);
-  
-    const routeCoords = pathToCoords(shortestPath);
-    console.log("Route Coordinates:", routeCoords);
-    if (routeCoords.length === 0) {
-      Alert.alert("Path not found", "No indoor route could be calculated to this room.");
-      return;
+    // STEP 4: Add real userLocation and roomCenter to start and end of path
+    if (path.length > 0) {
+      path.unshift(userLocation); // start at real location
+      const last = path[path.length - 1];
+      if (euclideanDistance(last, roomCenter) > 0.00001) {
+        path.push(roomCenter); // end inside the room
+      }
     }
-    console.log('Distance to closest path node from room:', distRoomToClosest);
   
-    setPathCoords(routeCoords);
-
+    setPathCoords(path);
+    setShowDirections(true);
   };
+  
+  
+  
+  
   
 
   const zoomToRoom = (roomFeature) => {
@@ -232,7 +325,7 @@ const InteractiveMap = forwardRef((props, ref) => {
       )}
 
 
-      {atCampus && pathCoords.length > 0 && (
+      {showDirections && pathCoords.length > 0 && (
   <>
     <Polyline
       coordinates={pathCoords}
