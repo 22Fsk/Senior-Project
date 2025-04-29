@@ -14,7 +14,7 @@ import * as Location from 'expo-location';
 const Index = () => {
   const [userLocation, setUserLocation] = useState(null);
   const [routeCoords, setRouteCoords] = useState(null);
-
+  const [selectedFloor, setSelectedFloor] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -105,8 +105,28 @@ const Index = () => {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-        <View>
-            <InteractiveMap ref={mapRef} routeCoords={routeCoords}/>
+          <View>
+          <View style={{ position: 'absolute', top: 40, right: 10, zIndex: 10 }}>
+            {[0, 1, 2].map(floor => (
+              <TouchableOpacity
+                key={floor}
+                onPress={() => setSelectedFloor(floor)}
+                style={{
+                  backgroundColor: selectedFloor === floor ? '#007bff' : '#e0e0e0',
+                  paddingVertical: 6,
+                  paddingHorizontal: 12,
+                  borderRadius: 5,
+                  marginBottom: 6,
+                }}
+              >
+                <Text style={{ color: selectedFloor === floor ? 'white' : 'black' }}>
+                  Floor {floor}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+            <InteractiveMap ref={mapRef} routeCoords={routeCoords} selectedFloor={selectedFloor}/>
         </View>
 
       <BottomSheet 

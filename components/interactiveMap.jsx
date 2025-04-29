@@ -2,26 +2,30 @@ import React, { forwardRef, useImperativeHandle, useRef, useEffect, useState } f
 import { View, Alert, Text, TouchableOpacity } from 'react-native';
 import MapView, { Polygon, Marker, Polyline } from 'react-native-maps';
 import * as Location from 'expo-location';
-import floorMap from '../app/floors/level0'; // GeoJSON
+import level0 from '../app/floors/level0';
+import level1 from '../app/floors/level1';
+import level2 from '../app/floors/level2';
 import MapViewDirections from 'react-native-maps-directions';
-
+const floorDataMap = {
+    0: level0,
+    1: level1,
+    2: level2,
+  };
 const InteractiveMap = forwardRef((props, ref) => {
   const mapRef = useRef();
   const GOOGLE_MAPS_APIKEY = '';
   //const [userLocation, setUserLocation] = useState(null);
   const userLocation = {latitude: 26.048311,longitude: 50.509834};
-
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [showDirections, setShowDirections] = useState(false);
-  const CAMPUS_ENTRANCE = {
-    latitude: 26.047884,
-    longitude: 50.509874
-  };
+  const CAMPUS_ENTRANCE = { latitude: 26.047884,  longitude: 50.509874};
   const [navigateToCampus, setNavigateToCampus] = useState(false);
   const [atCampus, setAtCampus] = useState(false);
   const [pathCoords, setPathCoords] = useState([]);
-
   
+
+  const floorMap = floorDataMap[props.selectedFloor] || level0;
+
   const startNavigationToCampus = () => {
     setNavigateToCampus(true);
   };
@@ -29,6 +33,7 @@ const InteractiveMap = forwardRef((props, ref) => {
   const pathFeatures = floorMap.features.filter(
     feature => feature.geometry.type === 'LineString' && feature.properties.type === 'path'
   );
+
   const toKey = ({ latitude, longitude }) => {
     if (latitude == null || longitude == null) {
       console.warn('Invalid coordinates passed to toKey:', { latitude, longitude });
@@ -185,9 +190,6 @@ const InteractiveMap = forwardRef((props, ref) => {
   
     return closestNode;
   };
-  
-  
-  
 
   useImperativeHandle(ref, () => ({
     zoomToRoom: (roomFeature) => {
@@ -201,8 +203,8 @@ const InteractiveMap = forwardRef((props, ref) => {
         mapRef.current?.animateToRegion({
           latitude: centerLat,
           longitude: centerLng,
-          latitudeDelta: 0.0002,
-          longitudeDelta: 0.0002,
+          latitudeDelta: 0.00015,
+          longitudeDelta: 0.00015,
         }, 500);
       }
     }
@@ -256,11 +258,6 @@ const InteractiveMap = forwardRef((props, ref) => {
     setPathCoords(path);
     setShowDirections(true);
   };
-  
-  
-  
-  
-  
 
   const zoomToRoom = (roomFeature) => {
     const coordinates = roomFeature.geometry.coordinates[0];
@@ -273,8 +270,8 @@ const InteractiveMap = forwardRef((props, ref) => {
       mapRef.current?.animateToRegion({
         latitude: centerLat,
         longitude: centerLng,
-        latitudeDelta: 0.0002,
-        longitudeDelta: 0.0002,
+        latitudeDelta: 0.0001,
+        longitudeDelta: 0.0001,
       }, 500);
     }
   };
@@ -332,7 +329,6 @@ const InteractiveMap = forwardRef((props, ref) => {
       strokeColor="blue"
       strokeWidth={3}
     />
-    {console.log(pathCoords)} {/* Check if pathCoords is correct */}
   </>
 )}
 
@@ -388,6 +384,23 @@ const InteractiveMap = forwardRef((props, ref) => {
             />
           );
         }
+
+        if (geometry.type === 'LineString' && properties.type !== 'path') {
+          const coords = geometry.coordinates.map(([x, y]) => ({
+            latitude: y,
+            longitude: x,
+          }));
+        
+          return (
+            <Polyline
+              key={index}
+              coordinates={coords}
+              strokeColor="black"
+              strokeWidth={3}
+            />
+          );
+        }
+        
 
         return null;
       })}

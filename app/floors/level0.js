@@ -273,7 +273,7 @@ export default {
       "type": "Feature",
       "properties": {
         "name": "023",
-        "type": " classroom"
+        "type": "classroom"
       },
       "geometry": {
         "coordinates": [
@@ -842,7 +842,7 @@ export default {
       "type": "Feature",
       "properties": {
         "name": "Stairs",
-        "type": "Stairs"
+        "type": "stairs"
       },
       "geometry": {
         "coordinates": [
