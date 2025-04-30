@@ -6,10 +6,14 @@ import { Feather, Fontisto, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import InteractiveMap from '../../components/interactiveMap';
 import colors from '../../components/ColorTamp';
 import MapView from 'react-native-maps';
-import floorMap from '../floors/level0';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalSearchParams } from 'expo-router';
 import * as Location from 'expo-location';
+import floor0 from '../floors/level0';
+import floor1 from '../floors/level1';
+import floor2 from '../floors/level2';
+
+const allFloors = [floor0, floor1, floor2];
 
 const Index = () => {
   const [userLocation, setUserLocation] = useState(null);
@@ -68,12 +72,20 @@ const Index = () => {
     view === 'history' ? styles.selectedButton : null
   ];
 
-  const filteredRooms = floorMap.features.filter(feature => {
-    if (feature.properties?.name && feature.geometry.type === 'Polygon') {
-      return feature.properties.name.toLowerCase().includes(search.toLowerCase());
-    }
-    return false;
-  });
+  const filteredRooms = allFloors.flatMap((floor, floorIndex) =>
+    floor.features
+      .filter(feature => {
+        const name = feature?.properties?.name;
+        return (
+          typeof name === 'string' &&
+          feature.geometry.type === 'Polygon' &&
+          name.toLowerCase().includes(search.toLowerCase())
+        );
+      })
+      .map(feature => ({ feature, floorIndex }))
+  );
+  
+  
 
   useEffect(() => {
     if (office && mapRef.current) {
@@ -163,35 +175,38 @@ const Index = () => {
     {filteredRooms.length === 0 ? (
       <Text style={styles.placeholder}>No matching rooms found.</Text>
     ) : (
-      filteredRooms.map((room, index) => (
+      filteredRooms.map(({ feature, floorIndex }, index) => (
         <Pressable
           key={index}
           style={styles.listItemBox}
           onPress={() => {
-            mapRef.current?.zoomToRoom(room);  // Zoom to the selected room
-            sheetRef.current?.snapToIndex(0);         // Close the bottom sheet
-            const updatedHistory = [room.properties.name, ...historyList.filter(item => item !== room.properties.name)].slice(0, 5);
+            setSelectedFloor(floorIndex); // Switch to correct floor
+            mapRef.current?.zoomToRoom(feature);
+            sheetRef.current?.snapToIndex(0);
+      
+            const updatedHistory = [
+              feature.properties.name,
+              ...historyList.filter(item => item !== feature.properties.name),
+            ].slice(0, 5);
             setHistoryList(updatedHistory);
-
-            // Save to AsyncStorage
+      
             AsyncStorage.setItem('roomHistory', JSON.stringify(updatedHistory)).catch(err =>
               console.log('Error saving history:', err)
             );
-
-            // Draw route
-            const roomCenter = getCentroid(room.geometry.coordinates);
+      
+            const roomCenter = getCentroid(feature.geometry.coordinates);
             if (userLocation) {
-              setRouteCoords([
-                userLocation,
-                roomCenter
-              ]);
+              setRouteCoords([userLocation, roomCenter]);
             }
           }}
         >
-          <Text style={styles.listItemText}>{room.properties.name}</Text>
+          <Text style={styles.listItemText}>
+            {feature.properties.name} (Floor {floorIndex})
+          </Text>
           <Ionicons name="chevron-forward-outline" size={20} color="gray" />
         </Pressable>
       ))
+      
     )}
   </View>
 )}
