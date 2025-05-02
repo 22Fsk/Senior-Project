@@ -89,17 +89,23 @@ const Index = () => {
 
   useEffect(() => {
     if (office && mapRef.current) {
-      const roomFeature = floorMap.features.find(
-        feature => feature.properties.name === office
-      );
+      for (let floorIndex = 0; floorIndex < allFloors.length; floorIndex++) {
+        const floor = allFloors[floorIndex];
+        const roomFeature = floor.features.find(
+          feature => feature.properties?.name === office && feature.geometry?.type === 'Polygon'
+        );
   
-      if (roomFeature && mapRef.current.zoomToRoom) {
-        setTimeout(() => {
-          mapRef.current.zoomToRoom(roomFeature);
-        }, 500); // delay allows map to mount
+        if (roomFeature) {
+          setSelectedFloor(floorIndex);
+          setTimeout(() => {
+            mapRef.current?.zoomToRoom(roomFeature);
+          }, 500); // Delay ensures the map has rendered
+          break;
+        }
       }
     }
   }, [office]);
+  
 
   const getCentroid = (coordinates) => {
     let lat = 0, lon = 0, total = coordinates[0].length;
