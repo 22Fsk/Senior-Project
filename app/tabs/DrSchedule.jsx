@@ -36,9 +36,10 @@ const DoctorList = () => {
   
 
   const handleDoctorClick = (doctor) => {
+
     router.push({
       pathname: "/doctor/contactDetails",
-      params: { id: doctor.id, name: doctor.name },
+      params: { id: doctor.id, Name: doctor.Name },
     });
     
   };
@@ -153,6 +154,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#f5f5f5',
+
   },
   searchBar: {
     marginBottom:10,

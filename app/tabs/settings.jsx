@@ -9,14 +9,6 @@ const settings = () => {
   // Sample settings data for each section
   const sections = [
     {
-      title: "App Settings",
-      data: [
-        { label: "Theme Color", navigateTo: "/theme" },
-        { label: "Language", navigateTo: "/language" },
-        { label: "Clear Cache", navigateTo: "/clearCache" },
-      ],
-    },
-    {
       title: "Notifications",
       data: [
         { label: "Push Notifications", navigateTo: "/pushNotifications" },

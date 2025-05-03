@@ -9,12 +9,12 @@ import { db } from '../../firebaseConfig';
 import floorMap from '../floors/level0';
 
 const DoctorDetails = () => {
-  const { id, name } = useLocalSearchParams();
+  const { id, Name } = useLocalSearchParams();
   const router = useRouter();
   const [copyIconColor, setCopyIconColor] = useState('gray');
   const [doctorData, setDoctorData] = useState(null);
 
-  if (!id || !name) return <Text>No doctor information available</Text>;
+  if (!id || !Name) return <Text>No doctor information available</Text>;
 
   
 
@@ -35,11 +35,11 @@ const DoctorDetails = () => {
     };
 
     if (id) fetchDoctorDetails();
-  }, [id]);
+  }, [id, Name]);
 
   const doctorDetails = doctorData ? [
-    { label: 'Email', value: doctorData.email, isEmail: true },
-    { label: 'Department', value: doctorData.department },
+    { label: 'Email', value: doctorData.Email, isEmail: true },
+    { label: 'Department', value: doctorData.Department },
     { label: 'Office', value: doctorData.Office, isLocation: true },
     { label: 'Schedule', value: 'See Schedule', isSchedule: true },
   ] : [];
@@ -61,7 +61,7 @@ const DoctorDetails = () => {
   return (
     <View style={styles.container}>
       <Image source={require('../../assets/images/welcome.png')} style={styles.profileImage} />
-      <Text style={styles.title}>{name}</Text>
+      <Text style={styles.title}>{Name}</Text>
       <FlatList
         data={doctorDetails}
         keyExtractor={(item) => item.label}

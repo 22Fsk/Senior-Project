@@ -7,13 +7,12 @@ const _layout = () => {
   return (
     <Tabs 
         tabBar={props=> <TabBar {...props}/>} 
-        screenOptions={{ headerShown: true }} 
     >
         <Tabs.Screen
         name="index"
         options={{
             title:"Home"
-        }} 
+        }} screenOptions={{ headerShown: true }}
         />
         <Tabs.Screen
         name="DrSchedule"
