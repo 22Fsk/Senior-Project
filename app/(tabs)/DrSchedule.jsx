@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, TextInput, FlatList, Pressable } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, TextInput, Pressable } from 'react-native';
 import { AntDesign, Feather, Ionicons } from '@expo/vector-icons';
 import { useRouter } from "expo-router";
 import colors from '../../components/ColorTamp';
 import { db } from '../../firebaseConfig';
 import { useEffect } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
+import { ScrollView } from 'react-native';
 
 
 const DoctorList = () => {
@@ -51,15 +52,15 @@ const DoctorList = () => {
   };
 
   const filteredDoctors = doctors.filter(doctor =>
-    doctor.name.toLowerCase().includes(search.toLowerCase())
+    doctor.Name.toLowerCase().includes(search.toLowerCase())
   );
 
   const favoriteDoctors = filteredDoctors.filter(doctor => doctor.isFavorite);
-  const otherDoctors = filteredDoctors.filter(doctor => !doctor.isFavorite).sort((a, b) => a.name.localeCompare(b.name));
+  const otherDoctors = filteredDoctors.filter(doctor => !doctor.isFavorite).sort((a, b) => a.Name.localeCompare(b.name));
 
   const renderItem = ({ item }) => (
     <TouchableOpacity style={styles.doctorItem} onPress={() => handleDoctorClick(item)}>
-      <Text style={styles.doctorName}>{item.name}</Text>
+      <Text style={styles.doctorName}>{item.Name}</Text>
       <TouchableOpacity onPress={() => toggleFavorite(item.id)}>
         <AntDesign
           name={item.isFavorite ? 'star' : 'staro'}
@@ -72,7 +73,7 @@ const DoctorList = () => {
 
   return (
     <View style={styles.container}>
-      {/** Search Bar */}
+      {/* Search Bar */}
       <View style={styles.searchBar}>
         <View style={styles.searchIcon}>
           <Feather name="search" size={20} color={'gray'} />
@@ -90,32 +91,58 @@ const DoctorList = () => {
           </Pressable>
         )}
       </View>
-
-      {/* Favorites Section */}
-      {favoriteDoctors.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Favorites</Text>
-          <FlatList
-            data={favoriteDoctors}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.id}
-          />
-        </View>
-      )}
-
-      {/* All Doctors Section */}
-      {otherDoctors.length > 0 && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>All Doctors</Text>
-          <FlatList
-            data={otherDoctors}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.id}
-          />
-        </View>
-      )}
+  
+      {/* Scrollable Content */}
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+        {/* Favorites Section */}
+        {favoriteDoctors.length > 0 && (
+          <View style={[styles.section, { marginTop: 10 }]}>
+            <Text style={styles.sectionTitle}>Favorites</Text>
+            {favoriteDoctors.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                style={styles.doctorItem}
+                onPress={() => handleDoctorClick(item)}
+              >
+                <Text style={styles.doctorName}>{item.Name}</Text>
+                <TouchableOpacity onPress={() => toggleFavorite(item.id)}>
+                  <AntDesign
+                    name={item.isFavorite ? 'star' : 'staro'}
+                    size={24}
+                    color={item.isFavorite ? colors.primary : 'gray'}
+                  />
+                </TouchableOpacity>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+  
+        {/* All Doctors Section */}
+        {otherDoctors.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>All Doctors</Text>
+            {otherDoctors.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                style={styles.doctorItem}
+                onPress={() => handleDoctorClick(item)}
+              >
+                <Text style={styles.doctorName}>{item.Name}</Text>
+                <TouchableOpacity onPress={() => toggleFavorite(item.id)}>
+                  <AntDesign
+                    name={item.isFavorite ? 'star' : 'staro'}
+                    size={24}
+                    color={item.isFavorite ? colors.primary : 'gray'}
+                  />
+                </TouchableOpacity>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </ScrollView>
     </View>
   );
+  
 };
 
 export default DoctorList;
