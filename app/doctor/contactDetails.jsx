@@ -7,12 +7,16 @@ import { useEffect } from 'react';
 import {doc , getDoc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import floorMap from '../floors/level0';
+import * as Clipboard from 'expo-clipboard';
+
 
 const DoctorDetails = () => {
   const { id, Name } = useLocalSearchParams();
   const router = useRouter();
   const [copyIconColor, setCopyIconColor] = useState('gray');
   const [doctorData, setDoctorData] = useState(null);
+  const [copied, setCopied] = useState(false);
+
 
   if (!id || !Name) return <Text>No doctor information available</Text>;
 
@@ -50,6 +54,7 @@ const DoctorDetails = () => {
 
   const copyToClipboard = async () => {
     await Clipboard.setString(doctorDetails[0].value);
+    setCopied(true);
     alert('Email copied to clipboard!');
   };
 
@@ -79,8 +84,18 @@ const DoctorDetails = () => {
               <View style={styles.row}>
                 <Text style={item.isSchedule ? styles.schedule : styles.value}>{item.value}</Text>
                 {item.isEmail && (
-                  <MaterialIcons name="content-copy" size={20} color={copyIconColor} onPress={copyToClipboard} />
+                  copied ? (
+                    <MaterialIcons name="check" size={20} color={colors.primary} />
+                  ) : (
+                    <MaterialIcons
+                      name="content-copy"
+                      size={20}
+                      color={copyIconColor}
+                      onPress={copyToClipboard}
+                    />
+                  )
                 )}
+
                 {(item.isLocation || item.isSchedule) && (
                   <Entypo name="chevron-right" size={20} color={colors.primary} />
                 )}

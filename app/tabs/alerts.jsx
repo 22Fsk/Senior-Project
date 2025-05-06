@@ -8,10 +8,14 @@ import moment from 'moment';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
+import { ScrollView } from 'react-native';
 
 const Alerts = () => {
   const [alerts, setAlerts] = useState([]);
   const navigation = useNavigation();  // Make sure useNavigation is being used for navigation
+  const [selectedType, setSelectedType] = useState('All');
+
+  const alertTypes = ['All', 'Event', 'Reminder', 'Academic', 'Maintainance', 'Emergency'];
 
   const getTypeIcon = (type) => {
     switch (type.toLowerCase()) {
@@ -56,6 +60,11 @@ const Alerts = () => {
   const handleClick = (alertId) => {
     navigation.navigate('alerts/alertDetails', { alertId });
   };
+
+  const filteredAlerts = selectedType === 'All'
+  ? alerts
+  : alerts.filter(alert => alert.type.toLowerCase() === selectedType.toLowerCase());
+
   
 
   const renderItem = ({ item }) => (
@@ -124,12 +133,45 @@ const Alerts = () => {
 
   return (
     <View style={styles.container}>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 10 }}>
+      <ScrollView
+  horizontal={true}
+  showsHorizontalScrollIndicator={false}
+  contentContainerStyle={{ paddingVertical: 8 }}
+>
+  {alertTypes.map((type) => (
+    <Pressable
+      key={type}
+      onPress={() => setSelectedType(type)}
+      style={{
+        paddingVertical: 10,
+        paddingHorizontal: 14,
+        borderRadius: 10,
+        backgroundColor: selectedType === type ? colors.primary : '#e5e7eb',
+        marginRight: 10,
+      }}
+    >
+      <Text
+        style={{
+          color: selectedType === type ? 'white' : '#374151',
+          fontWeight: '500',
+          fontSize: 14,
+        }}
+      >
+        {type}
+      </Text>
+    </Pressable>
+  ))}
+</ScrollView>
+      </View>
+
       <FlatList
-        data={alerts}
+        data={filteredAlerts}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         contentContainerStyle={styles.list}
       />
+
     </View>
   );
 };

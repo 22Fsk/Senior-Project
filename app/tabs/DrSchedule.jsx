@@ -7,6 +7,8 @@ import { db } from '../../firebaseConfig';
 import { useEffect } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { ScrollView } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 
 const DoctorList = () => {
@@ -19,10 +21,13 @@ const DoctorList = () => {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "doctors")); // or "doctors" if you use that
+        const favoritesJSON = await AsyncStorage.getItem('favoriteDoctors');
+        const favoriteIds = favoritesJSON ? JSON.parse(favoritesJSON) : [];
+  
+        const querySnapshot = await getDocs(collection(db, "doctors"));
         const fetchedDoctors = querySnapshot.docs.map(doc => ({
           id: doc.id,
-          isFavorite: false,
+          isFavorite: favoriteIds.includes(doc.id),
           ...doc.data(),
         }));
         setDoctors(fetchedDoctors);
@@ -34,6 +39,7 @@ const DoctorList = () => {
     fetchDoctors();
   }, []);
   
+  
 
   const handleDoctorClick = (doctor) => {
 
@@ -44,13 +50,21 @@ const DoctorList = () => {
     
   };
 
-  const toggleFavorite = (id) => {
-    setDoctors(prevDoctors =>
-      prevDoctors.map(doctor =>
+  const toggleFavorite = async (id) => {
+    try {
+      const updatedDoctors = doctors.map(doctor =>
         doctor.id === id ? { ...doctor, isFavorite: !doctor.isFavorite } : doctor
-      )
-    );
+      );
+      setDoctors(updatedDoctors);
+  
+      // Save favorite IDs only
+      const favoriteIds = updatedDoctors.filter(doc => doc.isFavorite).map(doc => doc.id);
+      await AsyncStorage.setItem('favoriteDoctors', JSON.stringify(favoriteIds));
+    } catch (error) {
+      console.error('Error saving favorites:', error);
+    }
   };
+  
 
   const filteredDoctors = doctors.filter(doctor =>
     doctor.Name.toLowerCase().includes(search.toLowerCase())
