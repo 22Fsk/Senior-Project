@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, Pressable } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, Pressable, Switch } from 'react-native';
 import { Entypo } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Share } from 'react-native';
@@ -7,13 +7,14 @@ import { ScrollView } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import { MaterialIcons } from '@expo/vector-icons';
 import { ToastAndroid, Platform, Alert } from 'react-native';
-
+import colors from '../../components/ColorTamp';
 
 
 const settings = () => {
   const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
   const [modalContent, setModalContent] = useState({ title: '', body: '' });
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
   const handleShareApp = async () => {
     try {
@@ -106,7 +107,12 @@ const settings = () => {
     {
       title: "Notifications",
       data: [
-        { label: "Push Notifications", navigateTo: "/pushNotifications" },
+        {
+          label: "Push Notifications",
+          isSwitch: true,
+          description: "Receive updates about events, schedule changes, and important announcements."
+        },
+        
       ],
     },
     {
@@ -165,27 +171,49 @@ App Version: 1.0.0
             <FlatList
               data={item.data}
               keyExtractor={(item) => item.label}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  onPress={() => {
-                    if (item.isModal) {
-                      setModalContent(item.content);
-                      setModalVisible(true);
-                    } else if (item.onPress) {
-                      item.onPress();
-                    } else if (item.navigateTo) {
-                      router.push(item.navigateTo);
-                    }                    
-                  }} 
-                  style={styles.settingItem}
-                >
-                  <Text style={styles.settingText}>{item.label}</Text>
-                  <Entypo name="chevron-right" size={20} color="gray" />
-                </TouchableOpacity>
-
-              )}
+              renderItem={({ item }) => {
+                if (item.isSwitch) {
+                  return (
+                    <View style={styles.settingItem}>
+                      <Text style={styles.settingText}>{item.label}</Text>
+                      <Switch
+                        value={notificationsEnabled}
+                        onValueChange={() => setNotificationsEnabled((prev) => !prev)}
+                        trackColor={{ false: '#ccc', true: colors.primary }}
+                        thumbColor={notificationsEnabled ? '#f4f3f4' : '#f4f3f4'}
+                      />
+                    </View>
+                  );
+                }
+              
+                return (
+                  <TouchableOpacity
+                    onPress={() => {
+                      if (item.isModal) {
+                        setModalContent(item.content);
+                        setModalVisible(true);
+                      } else if (item.onPress) {
+                        item.onPress();
+                      } else {
+                        router.push(item.navigateTo);
+                      }
+                    }}
+                  >
+                    <View style={styles.settingItem}>
+                      <Text style={styles.settingText}>{item.label}</Text>
+                      <Entypo name="chevron-right" size={20} color="gray" />
+                    </View>
+                  </TouchableOpacity>
+                );
+              }}
+              
             />
           </View>
+          {item.title === "Notifications" && (
+            <Text style={styles.sectionDescription}>
+              Receive updates about events, schedule changes, and important announcements.
+            </Text>
+          )}
           </View>
         )}
       />
@@ -224,14 +252,14 @@ const styles = StyleSheet.create({
     marginBottom: 120,
   },
   section: {
-    marginBottom: 20, // Space between sections
-    backgroundColor: '#fff', // White background for each section
-    borderRadius: 10, // Rounded corners
-    shadowColor: '#000', // Shadow color (iOS)
+    marginBottom: 10, 
+    backgroundColor: '#fff', 
+    borderRadius: 10, 
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 }, // Shadow direction
-    shadowOpacity: 0.1, // Subtle shadow opacity
-    shadowRadius: 4, // Shadow radius
-    elevation: 4, // Shadow for Android (elevation property)
+    shadowOpacity: 0.1, 
+    shadowRadius: 4, 
+    elevation: 4, // Shadow for Android
     marginHorizontal:10,
   },
   sectionTitle: {
@@ -316,6 +344,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#444',
     marginLeft: 10,
+  },
+  sectionDescription: {
+    fontSize: 13,
+    color: '#666',
+    lineHeight: 18,
+    paddingHorizontal: 25,
+    paddingBottom: 20,
+    backgroundColor: 'transparent',
   },
   
 });
