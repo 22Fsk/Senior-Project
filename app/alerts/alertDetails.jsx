@@ -29,16 +29,24 @@ const AlertDetail = () => {
       const saved = await AsyncStorage.getItem('bookmarkedEvents');
       let savedArray = saved ? JSON.parse(saved) : [];
   
-      if (!savedArray.includes(alertId)) {
+      if (savedArray.includes(alertId)) {
+        // Remove the alert from bookmarks
+        savedArray = savedArray.filter(id => id !== alertId);
+        await AsyncStorage.setItem('bookmarkedEvents', JSON.stringify(savedArray));
+        setIsBookmarked(false);
+        Alert.alert('Removed', 'Event has been removed from bookmarks.');
+      } else {
+        // Add the alert to bookmarks
         savedArray.push(alertId);
         await AsyncStorage.setItem('bookmarkedEvents', JSON.stringify(savedArray));
         setIsBookmarked(true);
         Alert.alert('Saved!', 'Event has been added to bookmarks.');
       }
     } catch (error) {
-      console.error('Error saving bookmark:', error);
+      console.error('Error updating bookmark:', error);
     }
   };
+  
   
 
   useEffect(() => {
@@ -93,6 +101,14 @@ const AlertDetail = () => {
 
             <FontAwesome name="clock-o" size={18} color={colors.primary} style={styles.icon} />
             <Text style={styles.text}>{alertData.date.toDate().toLocaleTimeString()}</Text>
+          </View>
+        )}
+
+        {/* Location */}
+        {alertData.location && (
+          <View style={styles.dateTimeRow}>
+            <FontAwesome name="map-marker" size={18} color={colors.primary} style={styles.icon} />
+            <Text style={styles.text}>{alertData.location}</Text>
           </View>
         )}
 

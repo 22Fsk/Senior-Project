@@ -17,7 +17,7 @@ const _layout = () => {
         <Tabs.Screen
         name="DrSchedule"
         options={{
-            title:"Facilities"
+            title:"Faculty"
         }} 
         />
         <Tabs.Screen

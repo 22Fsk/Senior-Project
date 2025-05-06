@@ -1,5 +1,5 @@
-import { StyleSheet, Text, View, FlatList } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { db } from '../../firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
@@ -7,39 +7,55 @@ import moment from 'moment';
 import colors from '../../components/ColorTamp';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
+import { Modal, Pressable } from 'react-native';
+
 
 const index = () => {
   const [bookmarkedEvents, setBookmarkedEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showToday, setShowToday] = useState(true);
+  const [showUpcoming, setShowUpcoming] = useState(true);
+  const [showPast, setShowPast] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
-  useEffect(() => {
-    const fetchBookmarkedEvents = async () => {
-      try {
-        const saved = await AsyncStorage.getItem('bookmarkedEvents');
-        const savedIds = saved ? JSON.parse(saved) : [];
-        const fetchEventPromises = savedIds.map(async (id) => {
-          const docRef = doc(db, 'alerts', id);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            return { id, ...docSnap.data() };
-          } else {
-            console.warn(`No such event with ID: ${id}`);
-            return null;
-          }
-        });
-        const events = await Promise.all(fetchEventPromises);
-        const filteredEvents = events.filter((event) => event !== null);
+  const openModal = (event) => {
+    setSelectedEvent(event);
+    setModalVisible(true);
+  };
+  
 
-        setBookmarkedEvents(filteredEvents);
-      } catch (error) {
-        console.error('Error fetching bookmarked events:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  useFocusEffect(
+    useCallback(() => {
+      const fetchBookmarkedEvents = async () => {
+        try {
+          setLoading(true);
+          const saved = await AsyncStorage.getItem('bookmarkedEvents');
+          const savedIds = saved ? JSON.parse(saved) : [];
+          const fetchEventPromises = savedIds.map(async (id) => {
+            const docRef = doc(db, 'alerts', id);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+              return { id, ...docSnap.data() };
+            } else {
+              console.warn(`No such event with ID: ${id}`);
+              return null;
+            }
+          });
+          const events = await Promise.all(fetchEventPromises);
+          const filteredEvents = events.filter((event) => event !== null);
+          setBookmarkedEvents(filteredEvents);
+        } catch (error) {
+          console.error('Error fetching bookmarked events:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
 
-    fetchBookmarkedEvents();
-  }, []);
+      fetchBookmarkedEvents();
+    }, [])
+  );
 
   if (loading) {
     return (
@@ -57,7 +73,6 @@ const index = () => {
     );
   }
 
-  // Categorize events
   const categorizeEvents = () => {
     const today = moment().startOf('day');
     const upcoming = [];
@@ -75,10 +90,9 @@ const index = () => {
       }
     });
 
-    // Sort the events by date/time
-    todayEvents.sort((a, b) => moment(a.date.toDate()).isBefore(b.date.toDate()) ? -1 : 1);
-    upcoming.sort((a, b) => moment(a.date.toDate()).isBefore(b.date.toDate()) ? -1 : 1);
-    pastEvents.sort((a, b) => moment(a.date.toDate()).isBefore(b.date.toDate()) ? -1 : 1);
+    todayEvents.sort((a, b) => moment(a.date.toDate()).diff(b.date.toDate()));
+    upcoming.sort((a, b) => moment(a.date.toDate()).diff(b.date.toDate()));
+    pastEvents.sort((a, b) => moment(a.date.toDate()).diff(b.date.toDate()));
 
     return { todayEvents, upcoming, pastEvents };
   };
@@ -86,96 +100,176 @@ const index = () => {
   const { todayEvents, upcoming, pastEvents } = categorizeEvents();
 
   const renderItem = ({ item }) => (
-    <View style={styles.card}>
-      <Text style={styles.title}>{item.title}</Text>
-
-      {/* Type Section */}
-      <View style={[styles.metaRow, styles.typeBadge]}>
-        <MaterialCommunityIcons name="calendar-star" size={16} color={colors.primary} style={styles.icon} />
-        <Text style={styles.typeText}>{item.type}</Text>
+    <TouchableOpacity onPress={() => openModal(item)} activeOpacity={0.7}>
+      <View style={styles.card}>
+        <Text style={styles.title}>{item.title}</Text>
+        <View style={[styles.metaRow, styles.typeBadge]}>
+          <MaterialCommunityIcons name="calendar-star" size={16} color={colors.primary} style={styles.icon} />
+          <Text style={styles.typeText}>{item.type}</Text>
+        </View>
+        <View style={styles.metaRow}>
+          {item.date && (
+            <>
+              <FontAwesome name="calendar" size={14} color={colors.primary} style={styles.icon} />
+              <Text style={styles.alertDate}>
+                {moment(item.date.toDate()).format('MMM D, YYYY')}
+              </Text>
+              <FontAwesome name="clock-o" size={14} color={colors.primary} style={styles.icon} />
+              <Text style={styles.alertDate}>
+                {moment(item.date.toDate()).format('h:mm A')}
+              </Text>
+            </>
+          )}
+        </View>
       </View>
+    </TouchableOpacity>
+  );
+  
 
-      {/* Date and Time Section */}
-      <View style={styles.metaRow}>
-        {item.date && (
-          <>
-            <FontAwesome name="calendar" size={14} color={colors.primary} style={styles.icon} />
-            <Text style={styles.alertDate}>
-              {moment(item.date.toDate()).format('MMM D, YYYY')}
-            </Text>
-            <FontAwesome name="clock-o" size={14} color={colors.primary} style={styles.icon} />
-            <Text style={styles.alertDate}>
-              {moment(item.date.toDate()).format('h:mm A')}
-            </Text>
-          </>
-        )}
+  const renderSectionHeader = (title, show, toggle) => (
+    <TouchableOpacity onPress={toggle} style={styles.cardtitle}>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>{title}</Text>
+        <FontAwesome name={show ? 'chevron-up' : 'chevron-down'} size={16} color="#4B5563" />
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
-    <View style={styles.container}>
-      {todayEvents.length > 0 && (
-        <>
-          <Text style={styles.sectionTitle}>Today's Events</Text>
-          <FlatList
-            data={todayEvents}
-            keyExtractor={(item) => item.id}
-            renderItem={renderItem}
-            contentContainerStyle={{ padding: 16 }}
-          />
-        </>
+    <ScrollView contentContainerStyle={{ padding: 16}}>
+      {/* Today Section */}
+      {renderSectionHeader("Today's Events", showToday, () => setShowToday(!showToday))}
+      {showToday && (
+        todayEvents.length > 0 ? (
+          todayEvents.map((item) => (
+            <View key={item.id}>{renderItem({ item })}</View>
+          ))
+        ) : (
+          <Text style={styles.emptyText}>No events today.</Text>
+        )
       )}
 
-      {upcoming.length > 0 && (
-        <>
-          <Text style={styles.sectionTitle}>Upcoming Events</Text>
-          <FlatList
-            data={upcoming}
-            keyExtractor={(item) => item.id}
-            renderItem={renderItem}
-            contentContainerStyle={{ padding: 16 }}
-          />
-        </>
+      {/* Upcoming Section */}
+      {renderSectionHeader("Upcoming Events", showUpcoming, () => setShowUpcoming(!showUpcoming))}
+      {showUpcoming && (
+        upcoming.length > 0 ? (
+          upcoming.map((item) => (
+            <View key={item.id}>{renderItem({ item })}</View>
+          ))
+        ) : (
+          <Text style={styles.emptyText}>No upcoming events.</Text>
+        )
       )}
 
-      {pastEvents.length > 0 && (
-        <>
-          <Text style={styles.sectionTitle}>Past Events</Text>
-          <FlatList
-            data={pastEvents}
-            keyExtractor={(item) => item.id}
-            renderItem={renderItem}
-            contentContainerStyle={{ padding: 16 }}
-          />
-        </>
+      {/* Past Section */}
+      {renderSectionHeader("Past Events", showPast, () => setShowPast(!showPast))}
+      {showPast && (
+        pastEvents.length > 0 ? (
+          pastEvents.map((item) => (
+            <View key={item.id}>{renderItem({ item })}</View>
+          ))
+        ) : (
+          <Text style={styles.emptyText}>No past events.</Text>
+        )
       )}
+
+<View style={{ height: 120 }} />
+<Modal
+  animationType="slide"
+  transparent={true}
+  visible={modalVisible}
+  onRequestClose={() => setModalVisible(false)}
+>
+  <View style={styles.modalOverlay}>
+    <View style={styles.modalContent}>
+      <ScrollView>
+        <Text style={styles.modalTitle}>{selectedEvent?.title}</Text>
+
+        {/* Highlight (was Type) */}
+        <View style={[styles.metaRow, styles.typeBadge]}>
+          <MaterialCommunityIcons name="star-four-points" size={16} color={colors.primary} style={styles.icon} />
+          <Text style={styles.typeText}>{selectedEvent?.type}</Text>
+        </View>
+
+        {/* Date */}
+        <View style={styles.metaRow}>
+          <FontAwesome name="calendar" size={14} color={colors.primary} style={styles.icon} />
+          <Text style={styles.modalDate}>
+            {moment(selectedEvent?.date.toDate()).format('MMM D, YYYY')}
+          </Text>
+        </View>
+
+        {/* Time */}
+        <View style={styles.metaRow}>
+          <FontAwesome name="clock-o" size={14} color={colors.primary} style={styles.icon} />
+          <Text style={styles.modalDate}>
+            {moment(selectedEvent?.date.toDate()).format('h:mm A')}
+          </Text>
+        </View>
+
+        {/* Location */}
+        {selectedEvent?.location && (
+          <View style={styles.metaRow}>
+            <MaterialCommunityIcons name="map-marker" size={16} color={colors.primary} style={styles.icon} />
+            <Text style={styles.modalLocation}>{selectedEvent.location}</Text>
+          </View>
+        )}
+
+        {/* Message */}
+        {selectedEvent?.message && (
+          <View style={styles.metaRow}>
+            <Text style={styles.modalMsg}>{selectedEvent.message}</Text>
+          </View>
+        )}
+
+        {/* Close Button */}
+        <View style={{ alignItems: 'center', marginTop: 20, marginBottom: 10 }}>
+          <Pressable onPress={() => setModalVisible(false)} style={styles.closeButton}>
+            <Text style={styles.closeButtonText}>Close</Text>
+          </Pressable>
+        </View>
+
+      </ScrollView>
     </View>
+  </View>
+</Modal>
+
+
+
+    </ScrollView>
+    
   );
 };
 
 export default index;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-  },
   center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
   card: {
-    backgroundColor: '#f8fafc',
+    backgroundColor: 'rgb(245, 251, 253)',
     padding: 16,
     borderRadius: 10,
     marginBottom: 10,
+    elevation: 2,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowRadius: 2,
+  },
+  cardtitle: {
+    backgroundColor: 'rgb(255, 255, 255)',
+    padding: 16,
+    borderRadius: 10,
+    marginBottom: 10,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   title: {
     fontSize: 18,
@@ -210,12 +304,72 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     marginRight: 10,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: colors.primary,
-    marginBottom: 10,
-    marginTop: 20,
-    paddingLeft: 16,
   },
+  emptyText: {
+    fontStyle: 'italic',
+    color: '#6b7280',
+    marginLeft: 10,
+    marginBottom: 10,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '85%',
+    maxHeight: '60%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#111827',
+  },
+  modalType: {
+    fontSize: 16,
+    marginBottom: 6,
+    color: colors.primary,
+  },
+  modalDate: {
+    fontSize: 14,
+    marginBottom: 4,
+    color: '#6b7280',
+  },
+  modalMsg: {
+    fontSize: 14,
+    marginTop: 10,
+    color: '#374151',
+  },
+  closeButton: {
+    backgroundColor: colors.primary,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  
+  
 });

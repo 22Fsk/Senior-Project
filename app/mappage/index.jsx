@@ -239,8 +239,8 @@ const Index = () => {
                   ]}
                   onPress={() => handleButtonPress('doctors')}
                 >
-                  <Fontisto name='person' size={20} color={view === 'doctors' ? colors.primary: "black"} style={styles.buttonIcon}/>
-                  <Text style={styles.buttonText}>Doctors</Text>
+                  <Fontisto name='star' size={20} color={view === 'doctors' ? colors.primary: "black"} style={styles.buttonIcon}/>
+                  <Text style={styles.buttonText}>Favorite</Text>
                 </TouchableOpacity>
               </View>
 
