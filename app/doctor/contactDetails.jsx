@@ -8,7 +8,7 @@ import {doc , getDoc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import floorMap from '../floors/level0';
 import * as Clipboard from 'expo-clipboard';
-
+import {getProfileImage} from './getImage';
 
 const DoctorDetails = () => {
   const { id, Name } = useLocalSearchParams();
@@ -65,7 +65,7 @@ const DoctorDetails = () => {
 
   return (
     <View style={styles.container}>
-      <Image source={require('../../assets/images/welcome.png')} style={styles.profileImage} />
+      <Image source={getProfileImage(doctorData.pic?.toString())} style={styles.profileImage} />
       <Text style={styles.title}>{Name}</Text>
       <FlatList
         data={doctorDetails}

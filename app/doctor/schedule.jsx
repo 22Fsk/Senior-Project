@@ -41,12 +41,42 @@ const Schedule = () => {
 
   const renderScheduleTable = () => {
     if (!schedule) return <Text>Loading schedule...</Text>;
-
+  
     const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
     const weekShort = ['U', 'M', 'T', 'W', 'H'];
-
+  
+    // Prepare the schedule data for display
     const tableData = daysOfWeek.map(day => schedule[day] || []);
-
+  
+    // Get the maximum number of time slots in any day to determine row count
+    const maxSlots = Math.max(...tableData.map(times => times.length));
+  
+    // Generate rows based on the max number of slots
+    const rows = [];
+    for (let i = 0; i < maxSlots; i++) {
+      rows.push(
+        <View key={i} style={styles.row}>
+          {tableData.map((times, index) => {
+            const timeSlot = times[i];  // Get the i-th time slot for each day
+            if (timeSlot) {
+              const [start, end] = timeSlot.split('-');  // Split start and end time
+              return (
+                <View key={index} style={styles.cell}>
+                  <Text style={styles.cellText}>{start}</Text>
+                  <Text style={styles.cellText}>{end}</Text>
+                </View>
+              );
+            }
+            return (
+              <View key={index} style={styles.cell}>
+                <Text style={styles.cellText}>-</Text> 
+              </View>
+            );
+          })}
+        </View>
+      );
+    }
+  
     return (
       <View style={styles.table}>
         <View style={styles.row}>
@@ -54,24 +84,13 @@ const Schedule = () => {
             <Text key={day} style={styles.headerCell}>{day}</Text>
           ))}
         </View>
-        <View style={styles.row}>
-          {tableData.map((times, index) => (
-            <View key={daysOfWeek[index]} style={styles.cell}>
-              {times.length > 0 ? times.map(time => {
-                const [start, end] = time.split('-');
-                return (
-                  <View key={time}>
-                    <Text style={styles.cellText}>{start}</Text>
-                    <Text style={styles.cellText}>{end}</Text>
-                  </View>
-                );
-              }) : <Text>-</Text>}
-            </View>
-          ))}
-        </View>
+        {rows}
       </View>
     );
-  };
+  };  
+  
+  
+  
 
   return (
     <View style={styles.container}>
@@ -143,7 +162,13 @@ const styles = StyleSheet.create({
     color: colors.primary,
     marginTop: 20,
     textAlign: 'center',
-  }
+  },
+  timeSlotCell: {
+    marginBottom: 5,  
+    padding: 1,
+    backgroundColor: 'rgb(217, 229, 237)',  // Or another color that fits the design
+    borderRadius: 3,
+  },
 });
 
 export default Schedule;
