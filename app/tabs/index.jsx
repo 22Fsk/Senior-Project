@@ -126,19 +126,29 @@ const index = () => {
   );
   
 
-  const renderSectionHeader = (title, show, toggle) => (
+  const renderSectionHeader = (title, show, toggle, count) => (
     <TouchableOpacity onPress={toggle} style={styles.cardtitle}>
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>{title}</Text>
+        <View style={{flexDirection: 'row'}}>
+        <Text style={styles.sectionTitle}>
+          {title}
+        </Text>
+        {count >= 0 && (
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{count}</Text>
+          </View>
+        )}
+        </View>
         <FontAwesome name={show ? 'chevron-up' : 'chevron-down'} size={16} color="#4B5563" />
       </View>
     </TouchableOpacity>
   );
-
+  
+  
   return (
-    <ScrollView contentContainerStyle={{ padding: 16}}>
+    <ScrollView contentContainerStyle={{ padding: 16 }}>
       {/* Today Section */}
-      {renderSectionHeader("Today's Events", showToday, () => setShowToday(!showToday))}
+      {renderSectionHeader("Today's Events", showToday, () => setShowToday(!showToday), todayEvents.length)}
       {showToday && (
         todayEvents.length > 0 ? (
           todayEvents.map((item) => (
@@ -148,9 +158,9 @@ const index = () => {
           <Text style={styles.emptyText}>No events today.</Text>
         )
       )}
-
+  
       {/* Upcoming Section */}
-      {renderSectionHeader("Upcoming Events", showUpcoming, () => setShowUpcoming(!showUpcoming))}
+      {renderSectionHeader("Upcoming Events", showUpcoming, () => setShowUpcoming(!showUpcoming), upcoming.length)}
       {showUpcoming && (
         upcoming.length > 0 ? (
           upcoming.map((item) => (
@@ -160,9 +170,9 @@ const index = () => {
           <Text style={styles.emptyText}>No upcoming events.</Text>
         )
       )}
-
+  
       {/* Past Section */}
-      {renderSectionHeader("Past Events", showPast, () => setShowPast(!showPast))}
+      {renderSectionHeader("Past Events", showPast, () => setShowPast(!showPast), pastEvents.length)}
       {showPast && (
         pastEvents.length > 0 ? (
           pastEvents.map((item) => (
@@ -172,8 +182,8 @@ const index = () => {
           <Text style={styles.emptyText}>No past events.</Text>
         )
       )}
-
-<View style={{ height: 120 }} />
+  
+      <View style={{ height: 120 }} />
 <Modal
   animationType="slide"
   transparent={true}
@@ -370,6 +380,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  
-  
+  badge: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    paddingVertical: 2,
+    paddingHorizontal: 7,
+    marginLeft: 8,  
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
 });

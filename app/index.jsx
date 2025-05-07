@@ -7,7 +7,7 @@ import { useRouter } from "expo-router";
 import { theme } from '../constants/theme';
 import { useEffect } from "react";
 import * as Location from "expo-location";
-
+import { TouchableOpacity } from "react-native";
 
 export default function Index() {
   const router = useRouter();
@@ -34,9 +34,9 @@ export default function Index() {
       <View style={styles.contentContainer}>
         <Text style={styles.title}>Smart Map</Text>
         <Text style={styles.punchline}>Find Your Way, Every Day</Text>
-        <Pressable onPress={()=> router.push('/tabs')} style={styles.startButton}>
+        <TouchableOpacity onPress={()=> router.push('/tabs')} style={styles.startButton}>
           <Text style={styles.startText}>Get Started</Text>
-        </Pressable>
+        </TouchableOpacity>
       </View>
     </View>
   );

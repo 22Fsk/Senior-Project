@@ -69,7 +69,7 @@ const settings = () => {
       );
     }
     if (modalContent.title === "Contact Us") {
-      const email = "support@example.com";
+      const email = "support@smartmap.com";
     
       const copyEmail = async () => {
         await Clipboard.setStringAsync(email);
@@ -82,12 +82,12 @@ const settings = () => {
     
       return (
         <View style={styles.contactContainer}>
-          <Text style={styles.modalText}>
+          <Text style={styles.modalTextC}>
             You can reach us at:
           </Text>
           <View style={styles.emailRow}>
             <TouchableOpacity onPress={copyEmail}>
-              <MaterialIcons name="content-copy" size={20} color="#2196F3" />
+              <MaterialIcons name="content-copy" size={20} color={colors.primary} />
             </TouchableOpacity>
             <Text style={styles.emailText}>{email}</Text>
             
@@ -299,12 +299,19 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 20,
+    textAlign: 'center',
   },
   modalText: {
     fontSize: 14,
     color: '#444',
     marginBottom: 20,
+  },
+  modalTextC: {
+    fontSize: 14,
+    color: '#444',
+    marginBottom: 20,
+    textAlign: 'center',
   },
   closeButton: {
     backgroundColor: colors.primary,
@@ -312,6 +319,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 5,
     alignSelf: 'flex-end',
+    marginTop: 10,
   },
   closeButtonText: {
     color: 'white',
@@ -338,7 +346,7 @@ const styles = StyleSheet.create({
   },
   emailRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    justifyContent: 'center',
   },
   emailText: {
     fontSize: 16,
