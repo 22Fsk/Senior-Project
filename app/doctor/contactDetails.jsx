@@ -99,6 +99,7 @@ const DoctorDetails = () => {
                 {(item.isLocation || item.isSchedule) && (
                   <Entypo name="chevron-right" size={20} color={colors.primary} />
                 )}
+                
               </View>
             </TouchableOpacity>
           </View>

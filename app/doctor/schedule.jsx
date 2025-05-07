@@ -1,181 +1,149 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
+import { db } from '../../firebaseConfig';
+import { doc, getDoc } from 'firebase/firestore';
 import colors from '../../components/ColorTamp';
 
-const schedule = () => {
-  const { name } = useLocalSearchParams();
+const Schedule = () => {
+  const { id } = useLocalSearchParams();
+  const [schedule, setSchedule] = useState(null);
+  const [name, setName] = useState(null); // State to store doctor's name
+  const [hour, setHour] = useState(null);
 
-  const scheduleData = [
-    { day: 'M', start: 9, end: 10 },
-    { day: 'T', start: 14, end: 15 },
-    { day: 'W', start: 10, end: 11 },
-    { day: 'T', start: 15, end: 16 },
-    { day: 'S', start: 9.5, end: 10.5 }, // 9:30 to 10:30
-    { day: 'H', start: 9.5, end: 10.5 }, // 9:30 to 10:30
-  ];
+  useEffect(() => {
+    const fetchSchedule = async () => {
+      try {
+        const docRef = doc(db, 'doctors', id);
+        const docSnap = await getDoc(docRef);
 
-  const hours = Array.from({ length: 12 }, (_, i) => i + 8); // 8 AM to 8 PM
-  const days = ['S', 'M', 'T', 'W', 'H'];
-
-  const formatTime = (hour) => {
-    const hours = Math.floor(hour);
-    const minutes = (hour % 1) * 60;
-    return `${hours}:${minutes === 0 ? '00' : minutes}`;
-  };
-
-  const getEvent = (day, hour) => {
-    return scheduleData.find((item) => {
-      if (item.day === day) {
-        if (hour >= item.start && hour < item.end) {
-          return true;
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setSchedule(data.schedule);
+          setHour(data.officehours);
+          const fullName = data.Name || '';
+          const parts = fullName.split(' ');
+          const doctorName = parts.length >= 2
+            ? `${parts[0]} ${parts[1]} ${parts[parts.length - 1]}` // e.g., "Dr. Allaqab"
+            : fullName;
+            
+          setName(doctorName); 
+        } else {
+          console.log('No such document!');
         }
-        // Check for half-hour intervals
-        if (item.start % 1 !== 0 && Math.floor(item.start) === hour) {
-          return true;
-        }
+      } catch (error) {
+        console.error('Error fetching schedule: ', error);
       }
-      return false;
-    });
+    };
+
+    fetchSchedule();
+  }, [id]);
+
+  const renderScheduleTable = () => {
+    if (!schedule) return <Text>Loading schedule...</Text>;
+
+    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday'];
+    const weekShort = ['U', 'M', 'T', 'W', 'H'];
+
+    const tableData = daysOfWeek.map(day => schedule[day] || []);
+
+    return (
+      <View style={styles.table}>
+        <View style={styles.row}>
+          {weekShort.map((day, index) => (
+            <Text key={day} style={styles.headerCell}>{day}</Text>
+          ))}
+        </View>
+        <View style={styles.row}>
+          {tableData.map((times, index) => (
+            <View key={daysOfWeek[index]} style={styles.cell}>
+              {times.length > 0 ? times.map(time => {
+                const [start, end] = time.split('-');
+                return (
+                  <View key={time}>
+                    <Text style={styles.cellText}>{start}</Text>
+                    <Text style={styles.cellText}>{end}</Text>
+                  </View>
+                );
+              }) : <Text>-</Text>}
+            </View>
+          ))}
+        </View>
+      </View>
+    );
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>{name ? `${name}'s Schedule` : "Doctor's Schedule"}</Text>
-      <View style={styles.calendar}>
-        <View style={styles.row}>
-          <Text style={[styles.timeLabel, styles.timeHeader]}></Text>
-          {days.map((day) => (
-            <Text key={day} style={styles.dayHeader}>{day}</Text>
-          ))}
-        </View>
-        {hours.map((hour) => (
-          <View key={hour} style={styles.row}>
-            <Text style={[styles.timeLabel, styles.timeCell]}>{formatTime(hour)}</Text>
-            {days.map((day) => {
-              const event = getEvent(day, hour);
-              const isHalfStart = event && event.start % 1 !== 0 && hour === Math.floor(event.start);
-              const isHalfEnd = event && event.end % 1 !== 0 && hour === Math.floor(event.end);
-              const isFullHourEvent = event && event.start % 1 === 0 && event.end % 1 === 0; // Check for full hour event
-              return (
-                <View key={`${day}-${hour}`} style={[styles.cell, isFullHourEvent && styles.activeCell]}>
-                  {isHalfStart && (
-                    <View style={styles.halfCellBottom}>
-                      <Text style={styles.halfTimeText}>{formatTime(event.start)}</Text>
-                    </View>
-                  )}
-                  {isHalfEnd && (
-                    <View style={styles.halfCellTop}>
-                      <Text style={styles.halfTimeText}>{formatTime(event.end)}</Text>
-                    </View>
-                  )}
-                  {isFullHourEvent && (
-                    <Text style={styles.eventText}>
-                      {formatTime(event.start)} - {formatTime(event.end)}
-                    </Text>
-                  )}
-                </View>
-              );
-            })}
-          </View>
-        ))}
-      </View>
+      <Text style={styles.header}>
+        {name ? `${name}` : 'Loading name...'}
+      </Text>
+      <Text style={styles.hour}>
+        <Text style={{ fontWeight: 'bold'}}>Office Hours:</Text>{'\n'}
+          {hour}
+        </Text>
+      <ScrollView>
+        {renderScheduleTable()}
+
+      </ScrollView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#f5f5f5' },
+  container: { 
+    flex: 1, 
+    padding: 20, 
+    backgroundColor: '#f5f5f5' 
+  },
   header: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
+    marginBottom: 10,
     textAlign: 'center',
-    marginBottom: 20,
+    marginTop: 40,
   },
-  calendar: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.5,
-    elevation: 5,
+  table: {
+    marginTop: 10,
   },
-  row: { flexDirection: 'row', alignItems: 'flex-start' },
-  timeLabel: {
-    width: 60,
-    textAlign: 'center',
-    fontWeight: 'bold',
-    color: '#444',
-    paddingVertical: 10,
-  },
-  timeHeader: {
-    paddingTop: 0,
-  },
-  timeCell: {
-    textAlign: 'center',
-    alignSelf: 'flex-start',
-  },
-  dayHeader: {
-    flex: 1,
-    textAlign: 'center',
-    fontWeight: 'bold',
-    paddingVertical: 5,
-    backgroundColor: '#e0e0e0',
+  row: {
+    flexDirection: 'row',
   },
   cell: {
     flex: 1,
-    height: 50,
-    borderWidth: 0,
-    borderRightWidth:0.5,
-    borderBottomWidth:0.5,
-    backgroundColor: '#fff',
+    padding: 13,
+    textAlign: 'center',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 10,
-    position: 'relative',
-    borderBottomColor: 'black',
-    borderRightColor: 'rgb(211, 211, 211)',
+    margin: 1,
+    borderRadius: 3,
+    backgroundColor: 'rgb(217, 229, 237)',
   },
-  activeCell: {
-    backgroundColor: colors.primary, // blue color for active event
-  },
-  halfCellBottom: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    width: '100%',
-    height: '60%',
+  headerCell: {
+    flex: 1,
+    padding: 15,
+    textAlign: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1, // Ensure the bottom half is on top
-  },
-  halfCellTop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '60%',
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 2, // Ensure the top half is on top
-  },
-  halfTimeText: {
-    color: '#fff',
-    fontSize: 10,
     fontWeight: 'bold',
+    color: 'rgb(255, 255, 255)',
+    borderRadius: 3,
+    margin: 1,
+  },
+  cellText: {
+    fontSize: 13,
     textAlign: 'center',
   },
-  eventText: {
-    color: '#fff',
-    fontSize: 10,
+  hour : {
+    backgroundColor: 'rgb(218, 240, 255)',
+    padding: 10,
+    margin: 1,
+    borderRadius: 4,
+    color: colors.primary,
+    marginTop: 20,
     textAlign: 'center',
-    fontWeight: 'bold',
-  },
+  }
 });
 
-export default schedule;
+export default Schedule;
