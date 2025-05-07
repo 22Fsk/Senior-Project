@@ -20,7 +20,7 @@ const TabBar = ({ state, descriptors, navigation }) => {
         index: (props) => <AntDesign name="home" size={26} color={greyColor} {...props} />, 
         DrSchedule: (props) => <AntDesign name="user" size={26} color={greyColor} {...props} />, 
         alerts: (props) => <MaterialIcons name="notifications-none" size={26} color={greyColor} {...props} />, 
-        settings: (props) => <Feather name="settings" size={24} color="black" />, 
+        settings: (props) => <Feather name="settings" size={24} color={greyColor} {...props} />, 
         map: (props) => <Feather name="map-pin" size={30} {...props} />, 
     };
 
