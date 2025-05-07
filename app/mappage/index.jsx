@@ -13,13 +13,107 @@ import floor0 from '../floors/level0';
 import floor1 from '../floors/level1';
 import floor2 from '../floors/level2';
 
-const allFloors = [floor0, floor1, floor2];
+
 
 const Index = () => {
   const [userLocation, setUserLocation] = useState(null);
   const [routeCoords, setRouteCoords] = useState(null);
   const [selectedFloor, setSelectedFloor] = useState(0);
+  const allFloors = [floor0, floor1, floor2];
+  const allFeatures = allFloors.flatMap(floor => floor.features);
+  const [searchQuery, setSearchQuery] = useState(''); // For search input query
+  const [searchResults, setSearchResults] = useState([]); // For filtered results
 
+
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+  
+    if (query.trim() === '') {
+      setSearchResults([]);  // Clear results when query is empty
+      return;
+    }
+  
+    // Filter features from all floors, ensuring `name` is treated as a string
+    const filteredResults = allFloors.flatMap((floor) =>
+      floor.features.filter((feature) => {
+        const featureName = feature.properties?.name?.toString();  // Convert to string to handle numeric names
+        return featureName && featureName.toLowerCase().includes(query.toLowerCase());
+      })
+    );
+  
+    setSearchResults(filteredResults);
+  };
+
+  const handleResultPress = (item) => {
+    console.log(`Selected: ${item.properties.name}`);
+    
+    // Find the room's feature from all floors
+    for (let floorIndex = 0; floorIndex < allFloors.length; floorIndex++) {
+      const floor = allFloors[floorIndex];
+      const roomFeature = floor.features.find(
+        feature => feature.properties?.name === item.properties.name && feature.geometry?.type === 'Polygon'
+      );
+  
+      if (roomFeature) {
+        // Check if the selected floor is different from the current floor
+        if (selectedFloor !== floorIndex) {
+          // Change the floor and zoom into the room
+          setSelectedFloor(floorIndex);
+          setTimeout(() => {
+            mapRef.current?.zoomToRoom(roomFeature);
+          }, 500); // Delay to allow the map to re-render after the floor change
+        } else {
+          // If the room is on the current floor, just zoom into the room
+          mapRef.current?.zoomToRoom(roomFeature);
+        }
+  
+        // Collapse the bottom sheet to 20%
+        sheetRef.current.snapToIndex(0); // 0 corresponds to '20%'
+        break;
+      }
+    }
+  };  
+
+    // handle doctor to map nav
+    useEffect(() => {
+      if (office && mapRef.current) {
+        let timeoutId;
+        console.log("Looking for office:", office);
+    
+        for (let floorIndex = 0; floorIndex < allFloors.length; floorIndex++) {
+          const floor = allFloors[floorIndex];
+          const roomFeature = floor.features.find(
+            feature =>
+              feature.properties?.name?.toString() === office.toString() &&
+              feature.geometry?.type === 'Polygon'
+          );
+    
+          
+          if (roomFeature) {
+            if (selectedFloor !== floorIndex) {
+              setSelectedFloor(floorIndex);
+              timeoutId = setTimeout(() => {
+                mapRef.current?.zoomToRoom?.(roomFeature);
+              }, 500);
+            } else {
+              // Delay the zoom slightly even if on the same floor to ensure map has mounted
+              timeoutId = setTimeout(() => {
+                mapRef.current?.zoomToRoom?.(roomFeature);
+              }, 300);
+            }
+            break;
+          }
+          
+        }
+    
+        // Cleanup timeout if component unmounts or office changes
+        return () => clearTimeout(timeoutId);
+      }
+    }, [office]);
+
+  
+  
+  
   useEffect(() => {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -57,7 +151,7 @@ const Index = () => {
   const sheetRef = useRef(null); // Define the sheetRef here
   const mapRef = useRef();
   const [view, setView] = useState('history'); 
-  const [search, setSearch] = useState('');
+  //const [search, setSearch] = useState('');
   const snapPoints = ['20%','50%', '95%'];
 
   const [historyList, setHistoryList] = useState([]);
@@ -72,39 +166,9 @@ const Index = () => {
     view === 'history' ? styles.selectedButton : null
   ];
 
-  const filteredRooms = allFloors.flatMap((floor, floorIndex) =>
-    floor.features
-      .filter(feature => {
-        const name = feature?.properties?.name;
-        return (
-          typeof name === 'string' &&
-          feature.geometry.type === 'Polygon' &&
-          name.toLowerCase().includes(search.toLowerCase())
-        );
-      })
-      .map(feature => ({ feature, floorIndex }))
-  );
-  
-  
 
-  useEffect(() => {
-    if (office && mapRef.current) {
-      for (let floorIndex = 0; floorIndex < allFloors.length; floorIndex++) {
-        const floor = allFloors[floorIndex];
-        const roomFeature = floor.features.find(
-          feature => feature.properties?.name === office && feature.geometry?.type === 'Polygon'
-        );
   
-        if (roomFeature) {
-          setSelectedFloor(floorIndex);
-          setTimeout(() => {
-            mapRef.current?.zoomToRoom(roomFeature);
-          }, 500); // Delay ensures the map has rendered
-          break;
-        }
-      }
-    }
-  }, [office]);
+  
   
 
   const getCentroid = (coordinates) => {
@@ -162,63 +226,37 @@ const Index = () => {
               </View>
               <TextInput
                 placeholder='Search for places...'
-                value={search}
-                onChangeText={value => setSearch(value)}
+                value={searchQuery}  // Bind it to searchQuery instead of searchResults
+                onChangeText={handleSearch}  // Use the handleSearch function to update results
                 style={styles.searchInput}
                 placeholderTextColor="gray"
               />
-              {search && (
+
+              {searchResults && (
                 <Pressable style={styles.closeIcon}
-                onPress={() => setSearch('')}>
+                onPress={() => setSearchResults('')}>
                   <Ionicons name="close" size={20} color={'black'} />
                 </Pressable>
               )}
             </View>
 
-            {search.length > 0 && (
-  <View style={styles.listContainer}>
-    <Text style={styles.title}>Search Results</Text>
-    {filteredRooms.length === 0 ? (
-      <Text style={styles.placeholder}>No matching rooms found.</Text>
-    ) : (
-      filteredRooms.map(({ feature, floorIndex }, index) => (
-        <Pressable
-          key={index}
-          style={styles.listItemBox}
-          onPress={() => {
-            setSelectedFloor(floorIndex); // Switch to correct floor
-            mapRef.current?.zoomToRoom(feature);
-            sheetRef.current?.snapToIndex(0);
-      
-            const updatedHistory = [
-              feature.properties.name,
-              ...historyList.filter(item => item !== feature.properties.name),
-            ].slice(0, 5);
-            setHistoryList(updatedHistory);
-      
-            AsyncStorage.setItem('roomHistory', JSON.stringify(updatedHistory)).catch(err =>
-              console.log('Error saving history:', err)
-            );
-      
-            const roomCenter = getCentroid(feature.geometry.coordinates);
-            if (userLocation) {
-              setRouteCoords([userLocation, roomCenter]);
-            }
-          }}
-        >
-          <Text style={styles.listItemText}>
-            {feature.properties.name} (Floor {floorIndex})
-          </Text>
-          <Ionicons name="chevron-forward-outline" size={20} color="gray" />
-        </Pressable>
-      ))
-      
-    )}
-  </View>
-)}
+            {searchResults.length > 0 ? (
+              searchResults.map((item, index) => (
+                <Pressable
+                  key={index}
+                  style={styles.listItemBox}
+                  onPress={() => handleResultPress(item)}
+                >
+                  <Text style={styles.listItemText}>{item.properties.name}</Text>
+                  <Ionicons name="chevron-forward-outline" size={20} color="gray" />
+                </Pressable>
+              ))
+            ) : (
+              <Text style={styles.placeholder}></Text>
+            )}
 
 
-          {!search.length && (
+          {!searchResults.length && (
 
             <View style={styles.catContainer}>
               <View style={styles.buttonContainer}>
