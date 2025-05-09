@@ -58,9 +58,20 @@ const Index = () => {
   );
   
 
-  const handleResultPress = (item) => {
+  const handleResultPress = async (item) => {
     console.log(`Selected: ${item.properties.name}`);
     setLoading(true); 
+
+      // Save to history
+      const roomName = item.properties.name;
+      const updatedHistory = [roomName, ...historyList.filter(name => name !== roomName)].slice(0, 10); // Keep recent 10 unique
+      setHistoryList(updatedHistory);
+
+      try {
+        await AsyncStorage.setItem('roomHistory', JSON.stringify(updatedHistory));
+      } catch (err) {
+        console.log('Error saving history:', err);
+      }
     
     // Find the room's feature from all floors
     for (let floorIndex = 0; floorIndex < allFloors.length; floorIndex++) {
@@ -177,7 +188,7 @@ const Index = () => {
   const mapRef = useRef();
   const [view, setView] = useState('history'); 
   //const [search, setSearch] = useState('');
-  const snapPoints = ['20%','50%', '95%'];
+  const snapPoints = ['20%','50%', '80%'];
 
   const [historyList, setHistoryList] = useState([]);
   const doctorsList = ['Dr. John Doe', 'Dr. Jane Smith', 'Dr. Sarah Johnson'];
@@ -214,7 +225,7 @@ const Index = () => {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
           <View>
-          <View style={{ position: 'absolute', top: 40, right: 10, zIndex: 10 }}>
+          <View style={{ position: 'absolute', top: 20, right: 0, left: 0, zIndex: 10, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
             {[0, 1, 2].map(floor => (
               <TouchableOpacity
                 key={floor}
@@ -222,9 +233,9 @@ const Index = () => {
                 style={{
                   backgroundColor: selectedFloor === floor ? colors.primary : '#e0e0e0',
                   paddingVertical: 6,
-                  paddingHorizontal: 12,
-                  borderRadius: 5,
-                  marginBottom: 6,
+                  paddingHorizontal: 15,
+                  borderRadius: 8,
+                  marginRight: 10,
                 }}
               >
                 <Text style={{ color: selectedFloor === floor ? 'white' : 'black' }}>
@@ -260,7 +271,7 @@ const Index = () => {
 
               {searchResults && (
                 <Pressable style={styles.closeIcon}
-                onPress={() => setSearchResults('')}>
+                onPress={() =>{ setSearchQuery(''), setSearchResults('')}}>
                   <Ionicons name="close" size={20} color={'black'} />
                 </Pressable>
               )}
@@ -271,7 +282,7 @@ const Index = () => {
                 <Pressable
                   key={index}
                   style={styles.listItemBox}
-                  onPress={() => handleResultPress(item)}
+                  onPress={() => {handleResultPress(item), setSearchQuery(''), setSearchResults('')}}
                 >
                   <Text style={styles.listItemText}>{item.properties.name}</Text>
                   <Ionicons name="chevron-forward-outline" size={20} color="gray" />

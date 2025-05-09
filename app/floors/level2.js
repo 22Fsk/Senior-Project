@@ -3901,7 +3901,7 @@ export default {
       "type": "Feature",
       "properties": {
         "name": 2001,
-        "type": "open lab"
+        "type": "openLab"
       },
       "geometry": {
         "coordinates": [

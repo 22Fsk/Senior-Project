@@ -152,9 +152,7 @@ export default {
     },
     {
       "type": "Feature",
-      "properties": {
-        "type": "hallway"
-      },
+      "properties": {},
       "geometry": {
         "coordinates": [
           [
@@ -181,7 +179,8 @@ export default {
           ]
         ],
         "type": "Polygon"
-      }
+      },
+      "id": 4
     },
     {
       "type": "Feature",
@@ -3876,9 +3875,7 @@ export default {
     },
     {
       "type": "Feature",
-      "properties": {
-        "type": "hallway"
-      },
+      "properties": {},
       "geometry": {
         "coordinates": [
           [
@@ -4027,7 +4024,7 @@ export default {
       "type": "Feature",
       "properties": {
         "name": 1002,
-        "type": "open lab"
+        "type": "openLab"
       },
       "geometry": {
         "coordinates": [

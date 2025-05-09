@@ -255,7 +255,7 @@ const InteractiveMap = forwardRef((props, ref) => {
         path.push(roomCenter); // end inside the room
       }
     }
-  
+
     setPathCoords(path);
     setShowDirections(true);
   };
@@ -277,16 +277,25 @@ const InteractiveMap = forwardRef((props, ref) => {
     }
   };
 
-  const getFillColor = (type, gender) => {
+  const getFillColor = (name, type, gender) => {
     if (type === 'restroom') {
       if (gender === 'women') return 'rgb(255, 182, 193)';
       if (gender === 'men') return 'rgb(173, 216, 230)';
       return 'rgba(211, 211, 211, 0.5)';
     }
+    if(name === 'CS Student Lounge')
+    {return 'rgb(241, 217, 39)';}
+    else if (name === 'IS Student Lounge')
+      {return 'rgb(179, 28, 28)';}
+    else if (name === 'CE Student Lounge')
+      {return 'rgb(28, 66, 179)';}
+
     const colors = {
       classroom: 'rgb(226, 228, 100)',
       office: 'rgb(255, 190, 99)',
       stairs: 'rgb(144, 238, 144)',
+      elevator: 'rgb(139, 36, 167)',
+      openLab : 'rgb(218, 80, 170)',
     };
     return colors[type] || 'rgba(200, 200, 200, 0.5)';
   };
@@ -324,16 +333,23 @@ const InteractiveMap = forwardRef((props, ref) => {
 
 
       {showDirections && pathCoords.length > 0 && (
-  <>
-    <Polyline
-      coordinates={pathCoords}
-      strokeColor= {colors.primary}
-      strokeWidth={5}
-    />
-  </>
-)}
+        <>
+          <Polyline
+            coordinates={pathCoords}
+            strokeColor= {colors.primary}
+            strokeWidth={3}
+          /> 
+        </>
+      )}
 
-
+      {showDirections && userLocation && (
+        <Marker
+          coordinate={userLocation}
+          title="You"
+          description="Your current location"
+          pinColor="blue" // You can customize this
+        />
+      )}
 
       {floorMap.features.map((feature, index) => {
         const { geometry, properties } = feature;
@@ -350,15 +366,15 @@ const InteractiveMap = forwardRef((props, ref) => {
             <React.Fragment key={index}>
               <Polygon
                 coordinates={coords}
-                fillColor={getFillColor(properties.type, properties.gender)}
+                fillColor={getFillColor(properties.name,properties.type, properties.gender)}
                 strokeColor="black"
                 strokeWidth={2}
                 tappable={true}
-                onPress={() => {handleRoomPress(feature), zoomToRoom(feature)}}
+                onPress={() => {handleRoomPress(feature)}}
               />
-              {properties.type === 'classroom' && (
+              {properties.type && (
               <Marker coordinate={{ latitude: centerLat, longitude: centerLng }}>
-                <TouchableOpacity onPress={() => {handleRoomPress(feature), zoomToRoom(feature)}}>
+                <TouchableOpacity onPress={() => {handleRoomPress(feature)}}>
                   <View style={{
                     backgroundColor: 'white',
                     paddingHorizontal: 4,
