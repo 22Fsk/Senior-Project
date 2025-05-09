@@ -225,21 +225,23 @@ const Index = () => {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
           <View>
+            
           <View style={{ position: 'absolute', top: 20, right: 0, left: 0, zIndex: 10, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
+            <Text style={{color: 'white', fontSize: 15, fontWeight: 'bold', marginRight: 10, textShadowColor: 'black', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 1, }}>Floor: </Text>
             {[0, 1, 2].map(floor => (
               <TouchableOpacity
                 key={floor}
                 onPress={() => setSelectedFloor(floor)}
                 style={{
                   backgroundColor: selectedFloor === floor ? colors.primary : '#e0e0e0',
-                  paddingVertical: 6,
-                  paddingHorizontal: 15,
+                  paddingVertical: 10,
+                  paddingHorizontal: 20,
                   borderRadius: 8,
                   marginRight: 10,
                 }}
               >
-                <Text style={{ color: selectedFloor === floor ? 'white' : 'black' }}>
-                  Floor {floor}
+                <Text style={{ color: selectedFloor === floor ? 'white' : 'black', fontSize: 15, fontWeight: 'bold' }}>
+                  {floor}
                 </Text>
               </TouchableOpacity>
             ))}
