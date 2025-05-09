@@ -2,6 +2,7 @@ import React, { forwardRef, useImperativeHandle, useRef, useEffect, useState } f
 import { View, Alert, Text, TouchableOpacity } from 'react-native';
 import MapView, { Polygon, Marker, Polyline } from 'react-native-maps';
 import * as Location from 'expo-location';
+import colors from './ColorTamp';
 import level0 from '../app/floors/level0';
 import level1 from '../app/floors/level1';
 import level2 from '../app/floors/level2';
@@ -13,9 +14,9 @@ const floorDataMap = {
   };
 const InteractiveMap = forwardRef((props, ref) => {
   const mapRef = useRef();
-  const GOOGLE_MAPS_APIKEY = '';
+  const GOOGLE_MAPS_APIKEY = 'AIzaSyBAw4L8WWlFuW_Q1KJPo72eaNqDGpQoIkQ';
   //const [userLocation, setUserLocation] = useState(null);
-  const userLocation = {latitude: 26.048311,longitude: 50.509834};
+  const userLocation = {latitude: 26.047974,longitude: 50.510879};
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [showDirections, setShowDirections] = useState(false);
   const CAMPUS_ENTRANCE = { latitude: 26.047884,  longitude: 50.509874};
@@ -302,7 +303,7 @@ const InteractiveMap = forwardRef((props, ref) => {
       }}
     >
 
-      {userLocation && selectedRoom && (
+      {/* {userLocation && selectedRoom && (
         <MapViewDirections
           origin={userLocation}
           destination={CAMPUS_ENTRANCE}
@@ -319,15 +320,15 @@ const InteractiveMap = forwardRef((props, ref) => {
             console.warn("Error getting campus directions:", error);
           }}
         />
-      )}
+      )} */}
 
 
       {showDirections && pathCoords.length > 0 && (
   <>
     <Polyline
       coordinates={pathCoords}
-      strokeColor="blue"
-      strokeWidth={3}
+      strokeColor= {colors.primary}
+      strokeWidth={5}
     />
   </>
 )}
@@ -353,10 +354,11 @@ const InteractiveMap = forwardRef((props, ref) => {
                 strokeColor="black"
                 strokeWidth={2}
                 tappable={true}
-                onPress={() => handleRoomPress(feature)}
+                onPress={() => {handleRoomPress(feature), zoomToRoom(feature)}}
               />
+              {properties.type === 'classroom' && (
               <Marker coordinate={{ latitude: centerLat, longitude: centerLng }}>
-                <TouchableOpacity onPress={() => handleRoomPress(feature)}>
+                <TouchableOpacity onPress={() => {handleRoomPress(feature), zoomToRoom(feature)}}>
                   <View style={{
                     backgroundColor: 'white',
                     paddingHorizontal: 4,
@@ -369,6 +371,7 @@ const InteractiveMap = forwardRef((props, ref) => {
                   </View>
                 </TouchableOpacity>
               </Marker>
+              )}
             </React.Fragment>
           );
         }

@@ -23,7 +23,7 @@ const Index = () => {
   const allFeatures = allFloors.flatMap(floor => floor.features);
   const [searchQuery, setSearchQuery] = useState(''); // For search input query
   const [searchResults, setSearchResults] = useState([]); // For filtered results
-
+  const [loading, setLoading] = useState(false);
 
   const handleSearch = (query) => {
     setSearchQuery(query);
@@ -44,8 +44,23 @@ const Index = () => {
     setSearchResults(filteredResults);
   };
 
+  const LoadingOverlay = () => (
+    <View style={{
+      position: 'absolute',
+      top: 0, left: 0, right: 0, bottom: 0,
+      backgroundColor: 'rgba(0,0,0,0.3)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 100,
+    }}>
+      <Text style={{ color: 'white', fontSize: 18 }}>Loading...</Text>
+    </View>
+  );
+  
+
   const handleResultPress = (item) => {
     console.log(`Selected: ${item.properties.name}`);
+    setLoading(true); 
     
     // Find the room's feature from all floors
     for (let floorIndex = 0; floorIndex < allFloors.length; floorIndex++) {
@@ -61,10 +76,14 @@ const Index = () => {
           setSelectedFloor(floorIndex);
           setTimeout(() => {
             mapRef.current?.zoomToRoom(roomFeature);
+            setLoading(false);
           }, 500); // Delay to allow the map to re-render after the floor change
         } else {
           // If the room is on the current floor, just zoom into the room
-          mapRef.current?.zoomToRoom(roomFeature);
+          setTimeout(() => {
+            mapRef.current?.zoomToRoom(roomFeature);
+            setLoading(false);
+          }, 300);
         }
   
         // Collapse the bottom sheet to 20%
@@ -78,6 +97,7 @@ const Index = () => {
     useEffect(() => {
       if (office && mapRef.current) {
         let timeoutId;
+        setLoading(true);
         console.log("Looking for office:", office);
     
         for (let floorIndex = 0; floorIndex < allFloors.length; floorIndex++) {
@@ -94,11 +114,13 @@ const Index = () => {
               setSelectedFloor(floorIndex);
               timeoutId = setTimeout(() => {
                 mapRef.current?.zoomToRoom?.(roomFeature);
+                setLoading(false);
               }, 500);
             } else {
               // Delay the zoom slightly even if on the same floor to ensure map has mounted
               timeoutId = setTimeout(() => {
                 mapRef.current?.zoomToRoom?.(roomFeature);
+                setLoading(false);
               }, 300);
             }
             break;
@@ -107,7 +129,10 @@ const Index = () => {
         }
     
         // Cleanup timeout if component unmounts or office changes
-        return () => clearTimeout(timeoutId);
+        return () => {
+          clearTimeout(timeoutId);
+          setLoading(false);
+        }
       }
     }, [office]);
 
@@ -184,6 +209,7 @@ const Index = () => {
   };
   
   
+  
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -194,7 +220,7 @@ const Index = () => {
                 key={floor}
                 onPress={() => setSelectedFloor(floor)}
                 style={{
-                  backgroundColor: selectedFloor === floor ? '#007bff' : '#e0e0e0',
+                  backgroundColor: selectedFloor === floor ? colors.primary : '#e0e0e0',
                   paddingVertical: 6,
                   paddingHorizontal: 12,
                   borderRadius: 5,
@@ -208,7 +234,7 @@ const Index = () => {
             ))}
           </View>
 
-            <InteractiveMap ref={mapRef} routeCoords={routeCoords} selectedFloor={selectedFloor}/>
+            <InteractiveMap key={selectedFloor} ref={mapRef} routeCoords={routeCoords} selectedFloor={selectedFloor}/>
         </View>
 
       <BottomSheet 
@@ -321,6 +347,9 @@ const Index = () => {
           </ScrollView>
         </BottomSheetView>
       </BottomSheet>
+
+      {loading && <LoadingOverlay />}
+      
     </GestureHandlerRootView>
   );
 };

@@ -39,7 +39,7 @@
       "type": "Feature",
       "properties": {
         "name": 2067,
-        "type": "oofice"
+        "type": "office"
       },
       "geometry": {
         "coordinates": [
@@ -762,7 +762,8 @@
     {
       "type": "Feature",
       "properties": {
-        "name": 2082
+        "name": 2082,
+        "type": "office"
       },
       "geometry": {
         "coordinates": [
@@ -790,7 +791,8 @@
           ]
         ],
         "type": "Polygon"
-      }
+      },
+      "id": 13
     },
     {
       "type": "Feature",
@@ -2489,7 +2491,7 @@
       "type": "Feature",
       "properties": {
         "name": 2007,
-        "type": " classroom"
+        "type": "classroom"
       },
       "geometry": {
         "coordinates": [
@@ -2523,7 +2525,7 @@
       "type": "Feature",
       "properties": {
         "name": "Stairs",
-        "type": "Stairs"
+        "type": "stairs"
       },
       "geometry": {
         "coordinates": [
@@ -2831,7 +2833,8 @@
     {
       "type": "Feature",
       "properties": {
-        "name": 2044
+        "name": 2044,
+        "type": "office"
       },
       "geometry": {
         "coordinates": [
@@ -2859,7 +2862,8 @@
           ]
         ],
         "type": "Polygon"
-      }
+      },
+      "id": 74
     },
     {
       "type": "Feature",
@@ -3931,8 +3935,7 @@
       "type": "Feature",
       "properties": {
         "name": 2006,
-        "type": "office",
-        "doctor": ""
+        "type": "office"
       },
       "geometry": {
         "coordinates": [
@@ -3960,7 +3963,8 @@
           ]
         ],
         "type": "Polygon"
-      }
+      },
+      "id": 106
     },
     {
       "type": "Feature",
@@ -5204,12 +5208,13 @@
         ],
         "type": "Polygon"
       },
-      "id": 126
+      "id": 124
     },
     {
       "type": "Feature",
       "properties": {
-        "name": 2052
+        "name": 2052,
+        "type": "office"
       },
       "geometry": {
         "coordinates": [
@@ -5238,12 +5243,13 @@
         ],
         "type": "Polygon"
       },
-      "id": 126
+      "id": 125
     },
     {
       "type": "Feature",
       "properties": {
-        "name": 2014
+        "name": 2014,
+        "type": "office"
       },
       "geometry": {
         "coordinates": [
