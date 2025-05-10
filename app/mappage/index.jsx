@@ -5,6 +5,7 @@ import { GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler
 import { Feather, Fontisto, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import InteractiveMap from '../../components/interactiveMap';
 import colors from '../../components/ColorTamp';
+import { FontAwesome } from '@expo/vector-icons';
 import MapView from 'react-native-maps';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalSearchParams } from 'expo-router';
@@ -24,6 +25,36 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState(''); // For search input query
   const [searchResults, setSearchResults] = useState([]); // For filtered results
   const [loading, setLoading] = useState(false);
+  const [favoriteRooms, setFavoriteRooms] = useState([]);
+
+  useEffect(() => {
+    const loadFavorites = async () => {
+      try {
+        const stored = await AsyncStorage.getItem('favoriteRooms');
+        if (stored) {
+          setFavoriteRooms(JSON.parse(stored));
+        }
+      } catch (err) {
+        console.log('Error loading favorites:', err);
+      }
+    };
+    loadFavorites();
+  }, []);
+
+  const toggleFavorite = async (roomName) => {
+    const updatedFavorites = favoriteRooms.includes(roomName)
+      ? favoriteRooms.filter(name => name !== roomName)
+      : [...favoriteRooms, roomName];
+
+    setFavoriteRooms(updatedFavorites);
+    try {
+      await AsyncStorage.setItem('favoriteRooms', JSON.stringify(updatedFavorites));
+    } catch (err) {
+      console.log('Error saving favorites:', err);
+    }
+  };
+
+
 
   const handleSearch = (query) => {
     setSearchQuery(query);
@@ -284,11 +315,22 @@ const Index = () => {
                 <Pressable
                   key={index}
                   style={styles.listItemBox}
-                  onPress={() => {handleResultPress(item), setSearchQuery(''), setSearchResults('')}}
+                  onPress={() => {
+                    handleResultPress(item);
+                    setSearchQuery('');
+                    setSearchResults([]);
+                  }}
                 >
                   <Text style={styles.listItemText}>{item.properties.name}</Text>
-                  <Ionicons name="chevron-forward-outline" size={20} color="gray" />
+                  <TouchableOpacity onPress={() => toggleFavorite(item.properties.name)}>
+                    <FontAwesome
+                      name={favoriteRooms.includes(item.properties.name) ? "star" : "star-o"}
+                      size={22}
+                      color={colors.primary}
+                    />
+                  </TouchableOpacity>
                 </Pressable>
+
               ))
             ) : (
               <Text style={styles.placeholder}></Text>
@@ -312,11 +354,11 @@ const Index = () => {
                 <TouchableOpacity
                   style={[
                     styles.button,
-                    view === 'doctors' ? styles.selectedButton : null,
+                    view === 'Favorite' ? styles.selectedButton : null,
                   ]}
-                  onPress={() => handleButtonPress('doctors')}
+                  onPress={() => handleButtonPress('Favorite')}
                 >
-                  <Fontisto name='star' size={20} color={view === 'doctors' ? colors.primary: "black"} style={styles.buttonIcon}/>
+                  <Fontisto name='star' size={20} color={view === 'Favorite' ? colors.primary: "black"} style={styles.buttonIcon}/>
                   <Text style={styles.buttonText}>Favorite</Text>
                 </TouchableOpacity>
               </View>
@@ -336,20 +378,28 @@ const Index = () => {
                     </Pressable>
                   ))}
                 </View>
-              ) : view === 'doctors' ? (
+              ) : view === 'Favorite' ? (
                 <View style={styles.listContainer}>
-                  <Text style={styles.title}>Doctors</Text>
-                  {doctorsList.map((item, index) => (
-                    <Pressable 
-                      key={index} 
-                      style={styles.listItemBox} 
-                      onPress={() => console.log(`Selected: ${item}`)} // Replace this with navigation or action
-                    >
-                      <Text style={styles.listItemText}>{item}</Text>
-                      <Ionicons name="chevron-forward-outline" size={20} color="gray" />
-                    </Pressable>
-                  ))}
+                  <Text style={styles.title}>Favorites</Text>
+                  {favoriteRooms.length === 0 ? (
+                    <Text>No favorites yet.</Text>
+                  ) : (
+                    favoriteRooms.map((item, index) => (
+                      <Pressable
+                        key={index}
+                        style={styles.listItemBox}
+                        onPress={() => {
+                          const room = allFeatures.find(f => f.properties?.name === item);
+                          if (room) handleResultPress(room);
+                        }}
+                      >
+                        <Text style={styles.listItemText}>{item}</Text>
+                        <Ionicons name="chevron-forward-outline" size={20} color="gray" />
+                      </Pressable>
+                    ))
+                  )}
                 </View>
+
               ) : (
                 <Text style={styles.placeholder}>Select an option to view content</Text>
               )}
