@@ -19,6 +19,8 @@ export const getProfileImage = (pic) => {
         return require('../assets/images/8.jpg');
       case '9':
         return require('../assets/images/9.jpg');
+      case '10':
+      return require('../assets/images/10.jpg');
       default:
         return require('../assets/images/default.jpg'); // Optional fallback image
     }
