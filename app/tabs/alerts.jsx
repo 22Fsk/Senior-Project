@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, FlatList, Pressable } from 'react-native';
+import { StyleSheet, Text, View, FlatList, Pressable, TouchableOpacity } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import colors from '../../components/ColorTamp';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -69,7 +69,7 @@ const Alerts = () => {
 
   const renderItem = ({ item }) => (
     <View>
-      <Pressable
+      <TouchableOpacity
         style={styles.alertCard}
         onPress={() => handleClick(item.id)} 
       >
@@ -126,7 +126,7 @@ const Alerts = () => {
               color={'#6b7280'}
             />
         </View>
-      </Pressable>
+      </TouchableOpacity>
     </View>
   );
 

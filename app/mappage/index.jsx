@@ -358,7 +358,7 @@ const Index = () => {
                     <Text>No favorites yet.</Text>
                   ) : (
                     favoriteRooms.map((item, index) => (
-                      <Pressable
+                      <TouchableOpacity
                         key={index}
                         style={styles.listItemBox}
                         onPress={() => {
@@ -368,7 +368,7 @@ const Index = () => {
                       >
                         <Text style={styles.listItemText}>{item}</Text>
                         <Ionicons name="chevron-forward-outline" size={20} color="gray" />
-                      </Pressable>
+                      </TouchableOpacity>
                     ))
                   )}
                 </View>
