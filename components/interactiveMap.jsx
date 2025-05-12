@@ -126,46 +126,52 @@ const InteractiveMap = forwardRef((props, ref) => {
   };
   
   // A star algorthim to find shortest path from user's location to selected room
-  const aStar = (graph, startKey, goalKey) => {
-    const openSet = [startKey];
-    const cameFrom = {};
-    const gScore = { [startKey]: 0 };
-    const fScore = { [startKey]: euclideanDistance(fromKey(startKey), fromKey(goalKey)) };
-  
-    while (openSet.length > 0) {
-      const current = openSet.reduce((lowest, node) => (
-        fScore[node] < fScore[lowest] ? node : lowest
-      ), openSet[0]);
-  
-      if (current === goalKey) {
-        const path = [];
-        let currentNode = goalKey;
-        while (currentNode !== startKey) {
-          path.push(fromKey(currentNode));
-          currentNode = cameFrom[currentNode];
-        }
-        path.push(fromKey(startKey));
-        return path.reverse();
+const aStar = (graph, startKey, goalKey) => {
+  const openSet = [startKey];
+  const cameFrom = {};
+  const gScore = { [startKey]: 0 };
+  const fScore = {
+    [startKey]: euclideanDistance(fromKey(startKey), fromKey(goalKey))
+  };
+  const closedSet = new Set(); // NEW: Set of evaluated nodes
+
+  while (openSet.length > 0) {
+    const current = openSet.reduce((lowest, node) => (
+      fScore[node] < fScore[lowest] ? node : lowest
+    ), openSet[0]);
+
+    if (current === goalKey) {
+      const path = [];
+      let currentNode = goalKey;
+      while (currentNode !== startKey) {
+        path.push(fromKey(currentNode));
+        currentNode = cameFrom[currentNode];
       }
-  
-      openSet.splice(openSet.indexOf(current), 1);
-  
-      for (const neighborKey of graph[current] || []) {
-        const tentativeG = gScore[current] + euclideanDistance(fromKey(current), fromKey(neighborKey));
-      
-        if (!(neighborKey in gScore) || tentativeG < gScore[neighborKey]) {
-          cameFrom[neighborKey] = current;
-          gScore[neighborKey] = tentativeG;
-          fScore[neighborKey] = tentativeG + euclideanDistance(fromKey(neighborKey), fromKey(goalKey));
-      
-          if (!openSet.includes(neighborKey)) openSet.push(neighborKey);
-        }
-      }
-      
+      path.push(fromKey(startKey));
+      return path.reverse();
     }
-  
-    return [];
-  };  
+
+    openSet.splice(openSet.indexOf(current), 1);
+    closedSet.add(current); // Mark current as evaluated
+
+    for (const neighborKey of graph[current] || []) {
+      if (closedSet.has(neighborKey)) continue; // Skip already evaluated nodes
+
+      const tentativeG = gScore[current] + euclideanDistance(fromKey(current), fromKey(neighborKey));
+
+      if (!(neighborKey in gScore) || tentativeG < gScore[neighborKey]) {
+        cameFrom[neighborKey] = current;
+        gScore[neighborKey] = tentativeG;
+        fScore[neighborKey] = tentativeG + euclideanDistance(fromKey(neighborKey), fromKey(goalKey));
+
+        if (!openSet.includes(neighborKey)) openSet.push(neighborKey);
+      }
+    }
+  }
+
+  return []; // No path found
+};
+
 
   // Zoom to room function to use from other components
   useImperativeHandle(ref, () => ({
