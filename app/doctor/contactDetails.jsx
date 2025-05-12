@@ -6,9 +6,8 @@ import colors from '../../components/ColorTamp';
 import { useEffect } from 'react';
 import {doc , getDoc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
-import floorMap from '../floors/level0';
 import * as Clipboard from 'expo-clipboard';
-import {getProfileImage} from './getImage';
+import {getProfileImage} from '../../components/getImage';
 
 const DoctorDetails = () => {
   const { id, Name } = useLocalSearchParams();
@@ -17,11 +16,8 @@ const DoctorDetails = () => {
   const [doctorData, setDoctorData] = useState(null);
   const [copied, setCopied] = useState(false);
 
-
   if (!id || !Name) return <Text>No doctor information available</Text>;
-
-  
-
+  // fetch doctors details from firestorage with id
   useEffect(() => {
     const fetchDoctorDetails = async () => {
       try {
@@ -51,7 +47,6 @@ const DoctorDetails = () => {
   if (!doctorData) return <Text style={{ padding: 20 }}>Loading doctor details...</Text>;
 
 
-
   const copyToClipboard = async () => {
     await Clipboard.setString(doctorDetails[0].value);
     setCopied(true);
@@ -59,7 +54,7 @@ const DoctorDetails = () => {
   };
 
   const handleOfficeClick = (officeName) => {
-    // Navigate to the map page with the room feature
+    // Go to the map page with the office number
     router.push(`/mappage?office=${encodeURIComponent(officeName)}`);
   };
 
@@ -76,7 +71,7 @@ const DoctorDetails = () => {
             <TouchableOpacity
               style={styles.detailBox}
               onPress={() => item.isLocation 
-                ? handleOfficeClick(item.value)  // Handle office name click
+                ? handleOfficeClick(item.value) 
                 : item.isSchedule 
                   ? router.push(`/doctor/schedule?id=${id}`) 
                   : null
@@ -110,15 +105,58 @@ const DoctorDetails = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#f5f5f5' },
-  profileImage: { width: 125, height: 125, borderRadius: 60, alignSelf: 'center', marginBottom: 20, borderColor: colors.primary, borderWidth: 5 },
-  title: { fontSize: 22, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 },
-  label: { fontSize: 15, fontWeight: 'bold', marginBottom: 5, marginLeft: 2 },
-  detailItem: { marginVertical: 10 },
-  detailBox: { backgroundColor: '#fff', padding: 15, borderRadius: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.2, shadowRadius: 2, elevation: 2 },
-  value: { fontSize: 16, color: '#555' },
-  schedule: { fontSize: 16, color: colors.primary, fontWeight: 'bold' },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  container: { 
+    flex: 1, 
+    padding: 20, 
+    backgroundColor: '#f5f5f5' 
+  },
+  profileImage: { 
+    width: 125, 
+    height: 125, 
+    borderRadius: 60, 
+    alignSelf: 'center', 
+    marginBottom: 20, 
+    borderColor: colors.primary, 
+    borderWidth: 5 
+  },
+  title: { 
+    fontSize: 22, 
+    fontWeight: 'bold', 
+    textAlign: 'center', 
+    marginBottom: 20 
+  },
+  label: { 
+    fontSize: 15, 
+    fontWeight: 'bold', 
+    marginBottom: 5, 
+    marginLeft: 2 
+  },
+  detailItem: { 
+    marginVertical: 10 
+  },
+  detailBox: { 
+    backgroundColor: '#fff', 
+    padding: 15, 
+    borderRadius: 10, 
+    shadowColor: '#000', 
+    shadowOffset: { width: 0, height: 1 }, 
+    shadowOpacity: 0.2, 
+    shadowRadius: 2, 
+    elevation: 2 
+  },
+  value: { 
+    fontSize: 16, 
+    color: '#555' 
+  },
+  schedule: { 
+    fontSize: 16, 
+    color: colors.primary, 
+    fontWeight: 'bold' 
+  },
+  row: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center' },
 });
 
 export default DoctorDetails;

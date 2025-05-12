@@ -6,7 +6,7 @@ import colors from './ColorTamp';
 import level0 from '../app/floors/level0';
 import level1 from '../app/floors/level1';
 import level2 from '../app/floors/level2';
-import MapViewDirections from 'react-native-maps-directions';
+
 const floorDataMap = {
     0: level0,
     1: level1,
@@ -14,31 +14,19 @@ const floorDataMap = {
   };
 const InteractiveMap = forwardRef((props, ref) => {
   const mapRef = useRef();
-  const GOOGLE_MAPS_APIKEY = 'AIzaSyBAw4L8WWlFuW_Q1KJPo72eaNqDGpQoIkQ';
   //const [userLocation, setUserLocation] = useState(null);
   const userLocation = {latitude: 26.047974,longitude: 50.510879};
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [showDirections, setShowDirections] = useState(false);
-  const CAMPUS_ENTRANCE = { latitude: 26.047884,  longitude: 50.509874};
-  const [navigateToCampus, setNavigateToCampus] = useState(false);
-  const [atCampus, setAtCampus] = useState(false);
   const [pathCoords, setPathCoords] = useState([]);
   
 
   const floorMap = floorDataMap[props.selectedFloor] || level0;
 
-  const startNavigationToCampus = () => {
-    setNavigateToCampus(true);
-  };
-
-  const pathFeatures = floorMap.features.filter(
-    feature => feature.geometry.type === 'LineString' && feature.properties.type === 'path'
-  );
-
   const toKey = ({ latitude, longitude }) => {
     if (latitude == null || longitude == null) {
       console.warn('Invalid coordinates passed to toKey:', { latitude, longitude });
-      return null; // Or throw an error
+      return null; 
     }
     return `${latitude.toFixed(6)},${longitude.toFixed(6)}`;
   };
@@ -46,18 +34,18 @@ const InteractiveMap = forwardRef((props, ref) => {
   const fromKey = (key) => {
     if (!key || typeof key !== 'string') {
       console.warn('Invalid key passed to fromKey:', key);
-      return { latitude: 0, longitude: 0 }; // or throw error
+      return { latitude: 0, longitude: 0 }; 
     }
     const [lat, lng] = key.split(',').map(Number);
     return { latitude: lat, longitude: lng };
   };
   
-
+  // build a graph from path lines
   const buildGraph = (floorMap) => {
     const graph = {};
     const allNodes = [];
   
-    // Step 1: Add nodes from each path feature
+    // Add nodes from each path feature
     floorMap.features.forEach(feature => {
       if (feature.geometry.type === 'LineString' && feature.properties.type === 'path') {
         const path = feature.geometry.coordinates.map(([x, y]) => ({
@@ -89,8 +77,8 @@ const InteractiveMap = forwardRef((props, ref) => {
       }
     });
   
-    // Step 2: Connect nodes that are very close to each other (across different paths)
-    const threshold = 0.000015; // ~1.6 meters
+    // Connect nodes that are very close to each other
+    const threshold = 0.000015; // 1.6 meters
     for (let i = 0; i < allNodes.length; i++) {
       for (let j = i + 1; j < allNodes.length; j++) {
         const a = allNodes[i];
@@ -111,7 +99,7 @@ const InteractiveMap = forwardRef((props, ref) => {
     return graph;
   };
   
-  
+  // find closest node
   const findClosestGraphNode = (graph, point) => {
     let closest = null;
     let minDist = Infinity;
@@ -128,12 +116,11 @@ const InteractiveMap = forwardRef((props, ref) => {
     return closest;
   };
   
-  
-  
   const euclideanDistance = (a, b) => {
     return Math.sqrt(Math.pow(b.latitude - a.latitude, 2) + Math.pow(b.longitude - a.longitude, 2));
   };
   
+  // A star algorthim to find shortest path from user's location to selected room
   const aStar = (graph, startKey, goalKey) => {
     const openSet = [startKey];
     const cameFrom = {};
@@ -175,23 +162,7 @@ const InteractiveMap = forwardRef((props, ref) => {
     return [];
   };  
 
-  const findClosestNode = (graph, point) => {
-    let closestNode = null;
-    let minDistance = Infinity;
-  
-    Object.keys(graph).forEach(key => {
-      const [lat, lng] = key.split(',').map(Number);
-      const node = { latitude: lat, longitude: lng };
-      const distance = euclideanDistance(node, point);
-      if (distance < minDistance) {
-        closestNode = key; // return the key, not the full object
-        minDistance = distance;
-      }
-    });
-  
-    return closestNode;
-  };
-
+  // Zoom to room function to use from other components
   useImperativeHandle(ref, () => ({
     zoomToRoom: (roomFeature) => {
       const coordinates = roomFeature.geometry.coordinates[0];
@@ -211,6 +182,7 @@ const InteractiveMap = forwardRef((props, ref) => {
     }
   }));
 
+  // Ask for location access permission
   useEffect(() => {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
@@ -227,16 +199,16 @@ const InteractiveMap = forwardRef((props, ref) => {
     })();
   }, []);
 
-  
+  // when room is pressed
   const handleRoomPress = (roomFeature) => {
     setSelectedRoom(roomFeature);
   
     const graph = buildGraph(floorMap);
   
-    // STEP 1: Snap user location to closest path node
+    // Snap user location to closest path node
     const userSnapKey = findClosestGraphNode(graph, userLocation);
   
-    // STEP 2: Snap room center to closest path node
+    // Snap room center to closest path node
     const coords = roomFeature.geometry.coordinates[0];
     const roomCenter = {
       latitude: coords.map(c => c[1]).reduce((a, b) => a + b, 0) / coords.length,
@@ -244,10 +216,10 @@ const InteractiveMap = forwardRef((props, ref) => {
     };
     const roomSnapKey = findClosestGraphNode(graph, roomCenter);
   
-    // STEP 3: Pathfind using A*
+    // Path find using A*
     const path = aStar(graph, userSnapKey, roomSnapKey);
   
-    // STEP 4: Add real userLocation and roomCenter to start and end of path
+    // Add real userLocation and roomCenter to start and end of path
     if (path.length > 0) {
       path.unshift(userLocation); // start at real location
       const last = path[path.length - 1];
@@ -260,6 +232,7 @@ const InteractiveMap = forwardRef((props, ref) => {
     setShowDirections(true);
   };
 
+  // zoom to rooom
   const zoomToRoom = (roomFeature) => {
     const coordinates = roomFeature.geometry.coordinates[0];
     if (coordinates && coordinates.length > 0) {
@@ -312,26 +285,6 @@ const InteractiveMap = forwardRef((props, ref) => {
       }}
     >
 
-      {/* {userLocation && selectedRoom && (
-        <MapViewDirections
-          origin={userLocation}
-          destination={CAMPUS_ENTRANCE}
-          apikey={GOOGLE_MAPS_APIKEY}
-          strokeWidth={4}
-          strokeColor="blue"
-          mode="DRIVING"
-          onReady={(result) => {
-            console.log("Arrived at campus");
-            setAtCampus(true); // Now show indoor directions
-            setNavigateToCampus(false);
-          }}
-          onError={(error) => {
-            console.warn("Error getting campus directions:", error);
-          }}
-        />
-      )} */}
-
-
       {showDirections && pathCoords.length > 0 && (
         <>
           <Polyline
@@ -342,15 +295,17 @@ const InteractiveMap = forwardRef((props, ref) => {
         </>
       )}
 
+      {/* Show user location pin */}
       {showDirections && userLocation && (
         <Marker
           coordinate={userLocation}
           title="You"
           description="Your current location"
-          pinColor="blue" // You can customize this
+          pinColor="blue" 
         />
       )}
 
+      {/* Draw the rooms */}
       {floorMap.features.map((feature, index) => {
         const { geometry, properties } = feature;
 
@@ -370,11 +325,11 @@ const InteractiveMap = forwardRef((props, ref) => {
                 strokeColor="black"
                 strokeWidth={2}
                 tappable={true}
-                onPress={() => {handleRoomPress(feature)}}
+                onPress={() => {handleRoomPress(feature), zoomToRoom(feature)}}
               />
               {properties.type && (
               <Marker coordinate={{ latitude: centerLat, longitude: centerLng }}>
-                <TouchableOpacity onPress={() => {handleRoomPress(feature)}}>
+                <TouchableOpacity onPress={() => {handleRoomPress(feature), zoomToRoom(feature)}}>
                   <View style={{
                     backgroundColor: 'white',
                     paddingHorizontal: 4,
@@ -392,6 +347,7 @@ const InteractiveMap = forwardRef((props, ref) => {
           );
         }
 
+        // pin
         if (geometry.type === 'Point') {
           const [x, y] = geometry.coordinates;
           return (
@@ -404,12 +360,12 @@ const InteractiveMap = forwardRef((props, ref) => {
           );
         }
 
+        // Map outline
         if (geometry.type === 'LineString' && properties.type !== 'path') {
           const coords = geometry.coordinates.map(([x, y]) => ({
             latitude: y,
             longitude: x,
           }));
-        
           return (
             <Polyline
               key={index}
@@ -419,8 +375,6 @@ const InteractiveMap = forwardRef((props, ref) => {
             />
           );
         }
-        
-
         return null;
       })}
     </MapView>

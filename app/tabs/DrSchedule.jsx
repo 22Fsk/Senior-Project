@@ -13,11 +13,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const DoctorList = () => {
   const router = useRouter();
-
   const [doctors, setDoctors] = useState([]);
-
   const [search, setSearch] = useState('');
 
+  // Fetch All Doctors form firestore and favorite from AsyncStorage
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
@@ -42,7 +41,6 @@ const DoctorList = () => {
   
 
   const handleDoctorClick = (doctor) => {
-
     router.push({
       pathname: "/doctor/contactDetails",
       params: { id: doctor.id, Name: doctor.Name },
@@ -50,6 +48,7 @@ const DoctorList = () => {
     
   };
 
+  // Favorite doctor 
   const toggleFavorite = async (id) => {
     try {
       const updatedDoctors = doctors.map(doctor =>
@@ -64,7 +63,6 @@ const DoctorList = () => {
       console.error('Error saving favorites:', error);
     }
   };
-  
 
   const filteredDoctors = doctors.filter(doctor =>
     doctor.Name.toLowerCase().includes(search.toLowerCase())
@@ -107,7 +105,6 @@ const DoctorList = () => {
         )}
       </View>
   
-      {/* Scrollable Content */}
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         {/* Favorites Section */}
         {favoriteDoctors.length > 0 && (
@@ -185,10 +182,10 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     borderRadius: 15,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 }, // Horizontal and vertical shadow positioning
-    shadowOpacity: 0.1, // Adjust for subtle effect
-    shadowRadius: 4, // Blur radius
-    elevation: 3, // Needed for Android
+    shadowOffset: { width: 0, height: 2 }, 
+    shadowOpacity: 0.1, 
+    shadowRadius: 4, 
+    elevation: 3, 
   },
   searchIcon: {
     padding: 8,
@@ -230,10 +227,10 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     borderRadius: 15,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 }, // Horizontal and vertical shadow positioning
-    shadowOpacity: 0.1, // Adjust for subtle effect
-    shadowRadius: 4, // Blur radius
-    elevation: 3, // Needed for Android
+    shadowOffset: { width: 0, height: 2 }, 
+    shadowOpacity: 0.1, 
+    shadowRadius: 4,
+    elevation: 3, 
   },
   doctorName: {
     fontSize: 16,

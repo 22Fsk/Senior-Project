@@ -25,7 +25,7 @@ const index = () => {
     setModalVisible(true);
   };
   
-
+  // Fetch Bookmarked Events form AsyncStorage
   useFocusEffect(
     useCallback(() => {
       const fetchBookmarkedEvents = async () => {
@@ -73,6 +73,7 @@ const index = () => {
     );
   }
 
+  // Devide Events into today's, upcoming, and past events.
   const categorizeEvents = () => {
     const today = moment().startOf('day');
     const upcoming = [];
@@ -99,6 +100,7 @@ const index = () => {
 
   const { todayEvents, upcoming, pastEvents } = categorizeEvents();
 
+  // Modal of details of bookmarked events
   const renderItem = ({ item }) => (
     <TouchableOpacity onPress={() => openModal(item)} activeOpacity={0.7}>
       <View style={styles.card}>
@@ -184,70 +186,66 @@ const index = () => {
       )}
   
       <View style={{ height: 120 }} />
-<Modal
-  animationType="slide"
-  transparent={true}
-  visible={modalVisible}
-  onRequestClose={() => setModalVisible(false)}
->
-  <View style={styles.modalOverlay}>
-    <View style={styles.modalContent}>
-      <ScrollView>
-        <Text style={styles.modalTitle}>{selectedEvent?.title}</Text>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <ScrollView>
+                <Text style={styles.modalTitle}>{selectedEvent?.title}</Text>
 
-        {/* Highlight (was Type) */}
-        <View style={[styles.metaRow, styles.typeBadge]}>
-          <MaterialCommunityIcons name="star-four-points" size={16} color={colors.primary} style={styles.icon} />
-          <Text style={styles.typeText}>{selectedEvent?.type}</Text>
-        </View>
+                {/* Highlight Type*/}
+                <View style={[styles.metaRow, styles.typeBadge]}>
+                  <MaterialCommunityIcons name="star-four-points" size={16} color={colors.primary} style={styles.icon} />
+                  <Text style={styles.typeText}>{selectedEvent?.type}</Text>
+                </View>
 
-        {/* Date */}
-        <View style={styles.metaRow}>
-          <FontAwesome name="calendar" size={14} color={colors.primary} style={styles.icon} />
-          <Text style={styles.modalDate}>
-            {moment(selectedEvent?.date.toDate()).format('MMM D, YYYY')}
-          </Text>
-        </View>
+                {/* Date */}
+                <View style={styles.metaRow}>
+                  <FontAwesome name="calendar" size={14} color={colors.primary} style={styles.icon} />
+                  <Text style={styles.modalDate}>
+                    {moment(selectedEvent?.date.toDate()).format('MMM D, YYYY')}
+                  </Text>
+                </View>
 
-        {/* Time */}
-        <View style={styles.metaRow}>
-          <FontAwesome name="clock-o" size={14} color={colors.primary} style={styles.icon} />
-          <Text style={styles.modalDate}>
-            {moment(selectedEvent?.date.toDate()).format('h:mm A')}
-          </Text>
-        </View>
+                {/* Time */}
+                <View style={styles.metaRow}>
+                  <FontAwesome name="clock-o" size={14} color={colors.primary} style={styles.icon} />
+                  <Text style={styles.modalDate}>
+                    {moment(selectedEvent?.date.toDate()).format('h:mm A')}
+                  </Text>
+                </View>
 
-        {/* Location */}
-        {selectedEvent?.location && (
-          <View style={styles.metaRow}>
-            <MaterialCommunityIcons name="map-marker" size={16} color={colors.primary} style={styles.icon} />
-            <Text style={styles.modalLocation}>{selectedEvent.location}</Text>
+                {/* Location */}
+                {selectedEvent?.location && (
+                  <View style={styles.metaRow}>
+                    <MaterialCommunityIcons name="map-marker" size={16} color={colors.primary} style={styles.icon} />
+                    <Text style={styles.modalLocation}>{selectedEvent.location}</Text>
+                  </View>
+                )}
+
+                {/* Message */}
+                {selectedEvent?.message && (
+                  <View style={styles.metaRow}>
+                    <Text style={styles.modalMsg}>{selectedEvent.message}</Text>
+                  </View>
+                )}
+
+                {/* Close Button */}
+                <View style={{ alignItems: 'center', marginTop: 20, marginBottom: 10 }}>
+                  <Pressable onPress={() => setModalVisible(false)} style={styles.closeButton}>
+                    <Text style={styles.closeButtonText}>Close</Text>
+                  </Pressable>
+                </View>
+
+              </ScrollView>
+            </View>
           </View>
-        )}
-
-        {/* Message */}
-        {selectedEvent?.message && (
-          <View style={styles.metaRow}>
-            <Text style={styles.modalMsg}>{selectedEvent.message}</Text>
-          </View>
-        )}
-
-        {/* Close Button */}
-        <View style={{ alignItems: 'center', marginTop: 20, marginBottom: 10 }}>
-          <Pressable onPress={() => setModalVisible(false)} style={styles.closeButton}>
-            <Text style={styles.closeButtonText}>Close</Text>
-          </Pressable>
-        </View>
-
-      </ScrollView>
-    </View>
-  </View>
-</Modal>
-
-
-
+        </Modal>
     </ScrollView>
-    
   );
 };
 

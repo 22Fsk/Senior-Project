@@ -12,7 +12,7 @@ import { ScrollView } from 'react-native';
 
 const Alerts = () => {
   const [alerts, setAlerts] = useState([]);
-  const navigation = useNavigation();  // Make sure useNavigation is being used for navigation
+  const navigation = useNavigation(); 
   const [selectedType, setSelectedType] = useState('All');
 
   const alertTypes = ['All', 'Event', 'Reminder', 'Academic', 'Maintainance', 'Emergency'];
@@ -34,6 +34,7 @@ const Alerts = () => {
     }
   };
 
+  // Fetch Alerts from firestore
   useEffect(() => {
     const fetchAlerts = async () => {
       try {
@@ -44,8 +45,7 @@ const Alerts = () => {
             id: doc.id,
             title: data.title,
             type: data.type,
-            date: data.date?.toDate?.() || null,  // Firestore Timestamp to JS Date
-            subscribed: false,
+            date: data.date?.toDate?.() || null, 
           };
         });
         setAlerts(fetchedAlerts);
@@ -71,13 +71,13 @@ const Alerts = () => {
     <View>
       <Pressable
         style={styles.alertCard}
-        onPress={() => handleClick(item.id)}  // Use handleClick with the alert's id
+        onPress={() => handleClick(item.id)} 
       >
         <View style={styles.cardContent}>
           <View style={{ flex: 1 }}>
             <Text style={styles.alertTitle}>{item.title}</Text>
 
-            {/* Type Row */}
+            {/* Type */}
             <View style={[styles.metaRow, styles.typeBadge]}>
               <MaterialCommunityIcons
                 name={getTypeIcon(item.type)}
@@ -88,7 +88,7 @@ const Alerts = () => {
               <Text style={styles.typeText}>{item.type}</Text>
             </View>
 
-            {/* Date and Time Row */}
+            {/* Date and Time */}
             <View style={styles.metaRow}>
               {item.date && (
                 <>
@@ -120,11 +120,10 @@ const Alerts = () => {
             </View>
           </View>
 
-         
             <Ionicons
-              name={item.subscribed ? 'chevron-down' : 'chevron-forward'}
+              name='chevron-forward'
               size={24}
-              color={item.subscribed ? colors.primary : '#6b7280'}
+              color={'#6b7280'}
             />
         </View>
       </Pressable>
@@ -134,44 +133,43 @@ const Alerts = () => {
   return (
     <View style={styles.container}>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: 10 }}>
-      <ScrollView
-  horizontal={true}
-  showsHorizontalScrollIndicator={false}
-  contentContainerStyle={{ paddingVertical: 8 }}
->
-  {alertTypes.map((type) => (
-    <Pressable
-      key={type}
-      onPress={() => setSelectedType(type)}
-      style={{
-        paddingVertical: 10,
-        paddingHorizontal: 14,
-        borderRadius: 10,
-        backgroundColor: selectedType === type ? colors.primary : '#e5e7eb',
-        marginRight: 10,
-      }}
-    >
-      <Text
-        style={{
-          color: selectedType === type ? 'white' : '#374151',
-          fontWeight: '500',
-          fontSize: 14,
-        }}
-      >
-        {type}
-      </Text>
-    </Pressable>
-  ))}
-</ScrollView>
+        <ScrollView
+          horizontal={true}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingVertical: 8 }}
+        >
+          {alertTypes.map((type) => (
+            <Pressable
+              key={type}
+              onPress={() => setSelectedType(type)}
+              style={{
+                paddingVertical: 10,
+                paddingHorizontal: 14,
+                borderRadius: 10,
+                backgroundColor: selectedType === type ? colors.primary : '#e5e7eb',
+                marginRight: 10,
+              }}
+            >
+              <Text
+                style={{
+                  color: selectedType === type ? 'white' : '#374151',
+                  fontWeight: '500',
+                  fontSize: 14,
+                }}
+              >
+                {type}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+
       </View>
-
-      <FlatList
-        data={filteredAlerts}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={styles.list}
-      />
-
+        <FlatList
+          data={filteredAlerts}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={styles.list}
+        />
     </View>
   );
 };
@@ -229,18 +227,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 2,
-    marginBottom: 4, // space between rows
+    marginBottom: 4,
   },
   icon: {
     marginRight: 6,
   },
   typeBadge: {
     alignSelf: 'flex-start',
-    backgroundColor: '#e0f2fe', // light blue background (adjustable)
+    backgroundColor: '#e0f2fe', 
     borderRadius: 12,
     paddingVertical: 4,
     paddingHorizontal: 8,
-    marginBottom: 6, // space before the next row
+    marginBottom: 6, 
   },
   typeText: {
     color: colors.primary,
@@ -249,7 +247,7 @@ const styles = StyleSheet.create({
   },
   alertDate: {
     fontSize: 14,
-    color: '#6b7280', // gray text
-    marginRight: 10, // margin between date/time
+    color: '#6b7280', 
+    marginRight: 10, 
   },
 });

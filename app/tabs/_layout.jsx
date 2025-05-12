@@ -1,7 +1,7 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
-import { Tabs } from 'expo-router'
-import TabBar from '../../components/TabBar'
+import { StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { Tabs } from 'expo-router';
+import TabBar from '../../components/TabBar'; // handle tabs navigation behavior
 
 const _layout = () => {
   return (

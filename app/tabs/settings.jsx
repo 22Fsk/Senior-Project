@@ -16,6 +16,7 @@ const settings = () => {
   const [modalContent, setModalContent] = useState({ title: '', body: '' });
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
+  // handle share app option
   const handleShareApp = async () => {
     try {
       await Share.share({
@@ -27,6 +28,7 @@ const settings = () => {
   };
 
   const renderModalContent = () => {
+    // FAQ option Content
     if (modalContent.title === "FAQ") {
       return (
         <ScrollView style={styles.modalScroll}>
@@ -68,6 +70,7 @@ const settings = () => {
         </ScrollView>
       );
     }
+    // Contact Us option content
     if (modalContent.title === "Contact Us") {
       const email = "support@smartmap.com";
     
@@ -218,28 +221,25 @@ App Version: 1.0.0
         )}
       />
 
-    <Modal
-      visible={modalVisible}
-      transparent={true}
-      animationType="slide"
-      onRequestClose={() => setModalVisible(false)}
-    >
-      <View style={styles.modalBackground}>
-        <View style={styles.modalContainer}>
-          <Text style={styles.modalTitle}>{modalContent.title}</Text>
-          {renderModalContent()}
-          <Pressable
-            onPress={() => setModalVisible(false)}
-            style={styles.closeButton}
-          >
-            <Text style={styles.closeButtonText}>Close</Text>
-          </Pressable>
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>{modalContent.title}</Text>
+            {renderModalContent()}
+            <Pressable
+              onPress={() => setModalVisible(false)}
+              style={styles.closeButton}
+            >
+              <Text style={styles.closeButtonText}>Close</Text>
+            </Pressable>
+          </View>
         </View>
-      </View>
-    </Modal>
-
-
-      
+      </Modal> 
     </View>
   );
 };
@@ -256,28 +256,28 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff', 
     borderRadius: 10, 
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 }, // Shadow direction
+    shadowOffset: { width: 0, height: 2 }, 
     shadowOpacity: 0.1, 
     shadowRadius: 4, 
-    elevation: 4, // Shadow for Android
+    elevation: 4, 
     marginHorizontal:10,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 10, // Space between title and items
-    paddingHorizontal: 10, // Add horizontal padding for title
-    paddingTop: 15, // Padding at the top of the section title
+    marginBottom: 10, 
+    paddingHorizontal: 10, 
+    paddingTop: 15, 
   },
   settingItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 15, // Padding around the text
-    borderBottomWidth: 1, // Add a line between items
-    borderBottomColor: '#ddd', // Line color
-    paddingHorizontal: 25, // Add horizontal padding for each item
+    paddingVertical: 15, 
+    borderBottomWidth: 1, 
+    borderBottomColor: '#ddd', 
+    paddingHorizontal: 25, 
   },
   settingText: {
     fontSize: 16,

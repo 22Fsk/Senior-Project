@@ -6,7 +6,6 @@ import { Feather, Fontisto, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import InteractiveMap from '../../components/interactiveMap';
 import colors from '../../components/ColorTamp';
 import { FontAwesome } from '@expo/vector-icons';
-import MapView from 'react-native-maps';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useLocalSearchParams } from 'expo-router';
 import * as Location from 'expo-location';
@@ -14,19 +13,18 @@ import floor0 from '../floors/level0';
 import floor1 from '../floors/level1';
 import floor2 from '../floors/level2';
 
-
-
 const Index = () => {
   const [userLocation, setUserLocation] = useState(null);
   const [routeCoords, setRouteCoords] = useState(null);
   const [selectedFloor, setSelectedFloor] = useState(0);
   const allFloors = [floor0, floor1, floor2];
   const allFeatures = allFloors.flatMap(floor => floor.features);
-  const [searchQuery, setSearchQuery] = useState(''); // For search input query
-  const [searchResults, setSearchResults] = useState([]); // For filtered results
+  const [searchQuery, setSearchQuery] = useState(''); 
+  const [searchResults, setSearchResults] = useState([]); 
   const [loading, setLoading] = useState(false);
   const [favoriteRooms, setFavoriteRooms] = useState([]);
 
+  // Fetch favorite rooms from AsyncStorage
   useEffect(() => {
     const loadFavorites = async () => {
       try {
@@ -41,6 +39,7 @@ const Index = () => {
     loadFavorites();
   }, []);
 
+  // Favorite rooms add them to AsyncStorage
   const toggleFavorite = async (roomName) => {
     const updatedFavorites = favoriteRooms.includes(roomName)
       ? favoriteRooms.filter(name => name !== roomName)
@@ -55,23 +54,20 @@ const Index = () => {
   };
 
 
-
   const handleSearch = (query) => {
     setSearchQuery(query);
   
     if (query.trim() === '') {
-      setSearchResults([]);  // Clear results when query is empty
+      setSearchResults([]); 
       return;
     }
-  
-    // Filter features from all floors, ensuring `name` is treated as a string
+
     const filteredResults = allFloors.flatMap((floor) =>
       floor.features.filter((feature) => {
-        const featureName = feature.properties?.name?.toString();  // Convert to string to handle numeric names
+        const featureName = feature.properties?.name?.toString(); 
         return featureName && featureName.toLowerCase().includes(query.toLowerCase());
       })
     );
-  
     setSearchResults(filteredResults);
   };
 
@@ -93,9 +89,9 @@ const Index = () => {
     console.log(`Selected: ${item.properties.name}`);
     setLoading(true); 
 
-      // Save to history
+      // Save to history AsyncStorage
       const roomName = item.properties.name;
-      const updatedHistory = [roomName, ...historyList.filter(name => name !== roomName)].slice(0, 10); // Keep recent 10 unique
+      const updatedHistory = [roomName, ...historyList.filter(name => name !== roomName)].slice(0, 5); // Keep recent 5 unique
       setHistoryList(updatedHistory);
 
       try {
@@ -119,17 +115,16 @@ const Index = () => {
           setTimeout(() => {
             mapRef.current?.zoomToRoom(roomFeature);
             setLoading(false);
-          }, 500); // Delay to allow the map to re-render after the floor change
+          }, 500); 
         } else {
-          // If the room is on the current floor, just zoom into the room
           setTimeout(() => {
             mapRef.current?.zoomToRoom(roomFeature);
             setLoading(false);
           }, 300);
         }
-  
-        // Collapse the bottom sheet to 20%
-        sheetRef.current.snapToIndex(0); // 0 corresponds to '20%'
+
+        // Set the bottom sheet to 20%
+        sheetRef.current.snapToIndex(0);
         break;
       }
     }
@@ -140,8 +135,8 @@ const Index = () => {
       if (office && mapRef.current) {
         let timeoutId;
         setLoading(true);
-        console.log("Looking for office:", office);
-    
+
+        // Check all floors
         for (let floorIndex = 0; floorIndex < allFloors.length; floorIndex++) {
           const floor = allFloors[floorIndex];
           const roomFeature = floor.features.find(
@@ -150,16 +145,16 @@ const Index = () => {
               feature.geometry?.type === 'Polygon'
           );
     
-          
           if (roomFeature) {
+            // if selected floor different than floor index
             if (selectedFloor !== floorIndex) {
+              // Change selected floor and zoom
               setSelectedFloor(floorIndex);
               timeoutId = setTimeout(() => {
                 mapRef.current?.zoomToRoom?.(roomFeature);
                 setLoading(false);
               }, 500);
             } else {
-              // Delay the zoom slightly even if on the same floor to ensure map has mounted
               timeoutId = setTimeout(() => {
                 mapRef.current?.zoomToRoom?.(roomFeature);
                 setLoading(false);
@@ -180,7 +175,7 @@ const Index = () => {
 
   
   
-  
+  // Ask for location access permission
   useEffect(() => {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -215,14 +210,11 @@ const Index = () => {
   }, []);
 
   const { office } = useLocalSearchParams(); 
-  const sheetRef = useRef(null); // Define the sheetRef here
+  const sheetRef = useRef(null);
   const mapRef = useRef();
   const [view, setView] = useState('history'); 
-  //const [search, setSearch] = useState('');
   const snapPoints = ['20%','50%', '80%'];
-
   const [historyList, setHistoryList] = useState([]);
-  const doctorsList = ['Dr. John Doe', 'Dr. Jane Smith', 'Dr. Sarah Johnson'];
 
   const handleButtonPress = (viewType) => {
     setView(viewType);
@@ -233,30 +225,9 @@ const Index = () => {
     view === 'history' ? styles.selectedButton : null
   ];
 
-
-  
-  
-  
-
-  const getCentroid = (coordinates) => {
-    let lat = 0, lon = 0, total = coordinates[0].length;
-    coordinates[0].forEach(coord => {
-      lon += coord[0];
-      lat += coord[1];
-    });
-    return {
-      latitude: lat / total,
-      longitude: lon / total
-    };
-  };
-  
-  
-  
-
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
           <View>
-            
           <View style={{ position: 'absolute', top: 20, right: 0, left: 0, zIndex: 10, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }}>
             <Text style={{color: 'white', fontSize: 15, fontWeight: 'bold', marginRight: 10, textShadowColor: 'black', textShadowOffset: { width: 1, height: 1 }, textShadowRadius: 1, }}>Floor: </Text>
             {[0, 1, 2].map(floor => (
@@ -276,8 +247,8 @@ const Index = () => {
                 </Text>
               </TouchableOpacity>
             ))}
-          </View>
 
+          </View>
             <InteractiveMap key={selectedFloor} ref={mapRef} routeCoords={routeCoords} selectedFloor={selectedFloor}/>
         </View>
 
@@ -296,12 +267,12 @@ const Index = () => {
               </View>
               <TextInput
                 placeholder='Search for places...'
-                value={searchQuery}  // Bind it to searchQuery instead of searchResults
-                onChangeText={handleSearch}  // Use the handleSearch function to update results
+                value={searchQuery} 
+                onChangeText={handleSearch}
                 style={styles.searchInput}
                 placeholderTextColor="gray"
               />
-
+              {/* search clear */ }
               {searchResults && (
                 <Pressable style={styles.closeIcon}
                 onPress={() =>{ setSearchQuery(''), setSearchResults('')}}>
@@ -310,6 +281,7 @@ const Index = () => {
               )}
             </View>
 
+            {/* search results */}
             {searchResults.length > 0 ? (
               searchResults.map((item, index) => (
                 <Pressable
@@ -321,6 +293,7 @@ const Index = () => {
                     setSearchResults([]);
                   }}
                 >
+                  {/* Favorite a Room */}
                   <Text style={styles.listItemText}>{item.properties.name}</Text>
                   <TouchableOpacity onPress={() => toggleFavorite(item.properties.name)}>
                     <FontAwesome
@@ -330,15 +303,12 @@ const Index = () => {
                     />
                   </TouchableOpacity>
                 </Pressable>
-
               ))
             ) : (
               <Text style={styles.placeholder}></Text>
             )}
 
-
           {!searchResults.length && (
-
             <View style={styles.catContainer}>
               <View style={styles.buttonContainer}>
                 {/* History Button */}
@@ -350,7 +320,7 @@ const Index = () => {
                   <Text style={styles.buttonText}>History</Text>
                 </TouchableOpacity>
 
-                {/* Doctors Button */}
+                {/* Favorite Button */}
                 <TouchableOpacity
                   style={[
                     styles.button,
@@ -363,19 +333,22 @@ const Index = () => {
                 </TouchableOpacity>
               </View>
 
-              {/* Conditionally render content based on selected view */}
+              {/* show content based on selected view */}
               {view === 'history' ? (
                 <View style={styles.listContainer}>
                   <Text style={styles.title}>History</Text>
                   {historyList.map((item, index) => (
-                    <Pressable 
+                    <TouchableOpacity 
                       key={index} 
                       style={styles.listItemBox} 
-                      onPress={() => console.log(`Selected: ${item}`)} // Replace this with navigation or action
+                      onPress={() => {
+                          const room = allFeatures.find(f => f.properties?.name === item);
+                          if (room) handleResultPress(room);
+                        }}
                     >
                       <Text style={styles.listItemText}>{item}</Text>
                       <Ionicons name="chevron-forward-outline" size={20} color="gray" />
-                    </Pressable>
+                    </TouchableOpacity>
                   ))}
                 </View>
               ) : view === 'Favorite' ? (
@@ -401,10 +374,8 @@ const Index = () => {
                 </View>
 
               ) : (
-                <Text style={styles.placeholder}>Select an option to view content</Text>
+                <Text></Text>
               )}
-
-
             </View>
           )}
           </ScrollView>
@@ -438,10 +409,10 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     borderRadius: 15,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 }, // Horizontal and vertical shadow positioning
-    shadowOpacity: 0.1, // Adjust for subtle effect
-    shadowRadius: 4, // Blur radius
-    elevation: 3, // Needed for Android
+    shadowOffset: { width: 0, height: 2 }, 
+    shadowOpacity: 0.1, 
+    shadowRadius: 4,
+    elevation: 3, 
   },
   searchIcon: {
     padding: 8,
@@ -471,14 +442,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 20,
-    backgroundColor: 'rgba(199, 199, 199, 0.5)',  // Set your desired background color here
-    borderRadius: 15,            // Optional: to give rounded corners
+    backgroundColor: 'rgba(199, 199, 199, 0.5)',  
+    borderRadius: 15, 
     padding: 2,   
   },
   button: {
-    flexDirection: 'row', // Align icon and text horizontally
-    alignItems: 'center', // Center align items
-    justifyContent: 'center', // Center everything inside
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
     paddingVertical: '10',
     paddingHorizontal: '11.5%',
     borderRadius: 12,
@@ -486,10 +457,10 @@ const styles = StyleSheet.create({
     margin: 2,
   },
   buttonIcon: {
-    marginRight: 8, // Adjust spacing between icon and text
+    marginRight: 8, 
   },
   selectedButton: {
-    backgroundColor: 'white', // Blue when selected
+    backgroundColor: 'white', 
   },
   buttonText: {
     color: 'Black',
@@ -514,17 +485,17 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ccc',
   },
   listItemBox: {
-    flexDirection: 'row',  // Align text and icon in one line
-    justifyContent: 'space-between', // Space out text and arrow icon
-    alignItems: 'center',  // Center items vertically
-    padding: 12,  // Add padding for a better look
-    backgroundColor: 'white',  // Box background color
-    borderRadius: 10,  // Rounded corners
-    marginBottom: 8,  // Space between items
-    shadowColor: '#000',  // Add subtle shadow
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center',  
+    padding: 12,  
+    backgroundColor: 'white',  
+    borderRadius: 10,  
+    marginBottom: 8,  
+    shadowColor: '#000', 
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 2,  // Elevation for Android shadow effect
+    elevation: 2, 
   },
   listItemText: {
     fontSize: 16,

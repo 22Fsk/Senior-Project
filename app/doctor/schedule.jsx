@@ -8,9 +8,10 @@ import colors from '../../components/ColorTamp';
 const Schedule = () => {
   const { id } = useLocalSearchParams();
   const [schedule, setSchedule] = useState(null);
-  const [name, setName] = useState(null); // State to store doctor's name
+  const [name, setName] = useState(null); 
   const [hour, setHour] = useState(null);
 
+  // Fetcj doctor's schedule from firestore
   useEffect(() => {
     const fetchSchedule = async () => {
       try {
@@ -24,7 +25,7 @@ const Schedule = () => {
           const fullName = data.Name || '';
           const parts = fullName.split(' ');
           const doctorName = parts.length >= 2
-            ? `${parts[0]} ${parts[1]} ${parts[parts.length - 1]}` // e.g., "Dr. Allaqab"
+            ? `${parts[0]} ${parts[1]} ${parts[parts.length - 1]}` // Dr. firstname lastname
             : fullName;
             
           setName(doctorName); 
@@ -48,7 +49,7 @@ const Schedule = () => {
     // Prepare the schedule data for display
     const tableData = daysOfWeek.map(day => schedule[day] || []);
   
-    // Get the maximum number of time slots in any day to determine row count
+    // Get the maximum number of slots in any day to determine row count
     const maxSlots = Math.max(...tableData.map(times => times.length));
   
     // Generate rows based on the max number of slots
@@ -57,7 +58,7 @@ const Schedule = () => {
       rows.push(
         <View key={i} style={styles.row}>
           {tableData.map((times, index) => {
-            const timeSlot = times[i];  // Get the i-th time slot for each day
+            const timeSlot = times[i]; 
             if (timeSlot) {
               const [start, end] = timeSlot.split('-');  // Split start and end time
               return (
@@ -89,8 +90,6 @@ const Schedule = () => {
     );
   };  
   
-  
-  
 
   return (
     <View style={styles.container}>
@@ -103,7 +102,6 @@ const Schedule = () => {
         </Text>
       <ScrollView>
         {renderScheduleTable()}
-
       </ScrollView>
     </View>
   );
@@ -166,7 +164,7 @@ const styles = StyleSheet.create({
   timeSlotCell: {
     marginBottom: 5,  
     padding: 1,
-    backgroundColor: 'rgb(217, 229, 237)',  // Or another color that fits the design
+    backgroundColor: 'rgb(217, 229, 237)', 
     borderRadius: 3,
   },
 });

@@ -1,7 +1,7 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React from 'react';
 import { AntDesign, Feather, MaterialIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router'; // Import useRouter
+import { useRouter } from 'expo-router'; 
 import colors from './ColorTamp';
 
 const TabBar = ({ state, descriptors, navigation }) => {
@@ -14,7 +14,7 @@ const TabBar = ({ state, descriptors, navigation }) => {
     
     const primaryColor = 'rgb(94, 195, 253)';
     const greyColor = '#222';
-    const router = useRouter(); // Get the router instance
+    const router = useRouter(); 
     
     const icons = {
         index: (props) => <AntDesign name="home" size={26} color={greyColor} {...props} />, 
@@ -25,7 +25,6 @@ const TabBar = ({ state, descriptors, navigation }) => {
     };
 
     const onPress = (route) => {
-        // Navigate to 'map' screen
         if (route.name === 'map') {
             router.push('/mappage'); // Navigate to the "mappage" screen directly
         } else {
@@ -58,7 +57,7 @@ const TabBar = ({ state, descriptors, navigation }) => {
                         accessibilityState={isFocused ? { selected: true } : {}}
                         accessibilityLabel={options.tabBarAccessibilityLabel}
                         testID={options.tabBarButtonTestID}
-                        onPress={() => onPress(route)} // Pass the route to onPress
+                        onPress={() => onPress(route)}
                     >
                         <View style={route.name === "map" ? styles.mapIconBackground : null}>
                             {icons[route.name]({ color: isFocused ? colors.primary : greyColor })}

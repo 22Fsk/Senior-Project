@@ -1,20 +1,21 @@
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { useRoute } from '@react-navigation/native';  // Import useRoute to get params
+import { useRoute } from '@react-navigation/native';  
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
-import Ionicons from 'react-native-vector-icons/Ionicons';  // Import Ionicons for the bell icon
-import FontAwesome from 'react-native-vector-icons/FontAwesome';  // Import FontAwesome for calendar and clock icons
-import colors from '../../components/ColorTamp';  // Assuming you have a colors file
+import Ionicons from 'react-native-vector-icons/Ionicons';  
+import FontAwesome from 'react-native-vector-icons/FontAwesome';  
+import colors from '../../components/ColorTamp'; 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
 
 const AlertDetail = () => {
-  const route = useRoute();  // Access the params passed during navigation
-  const { alertId } = route.params;  // Get the alertId passed from the Alerts screen
+  const route = useRoute();  
+  const { alertId } = route.params; 
   const [alertData, setAlertData] = useState(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
 
+  // Check if event is bookmarked
   useEffect(() => {
     const checkIfBookmarked = async () => {
       const saved = await AsyncStorage.getItem('bookmarkedEvents');
@@ -24,6 +25,7 @@ const AlertDetail = () => {
     checkIfBookmarked();
   }, [alertId]);
   
+  // Add and remove event from bookmark in AsyncStorage
   const handleBookmark = async () => {
     try {
       const saved = await AsyncStorage.getItem('bookmarkedEvents');
@@ -47,16 +49,15 @@ const AlertDetail = () => {
     }
   };
   
-  
-
+  // Fetch alerts from firestore
   useEffect(() => {
     const fetchAlertDetails = async () => {
       try {
-        const docRef = doc(db, 'alerts', alertId); // Get the alert by ID
+        const docRef = doc(db, 'alerts', alertId); 
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          setAlertData(docSnap.data()); // Set the alert data into state
+          setAlertData(docSnap.data()); 
         } else {
           console.warn('No such alert!');
         }
@@ -89,11 +90,11 @@ const AlertDetail = () => {
         </View>
       </View>
 
-      {/* Message Box */}
+      {/* Message */}
       <View style={styles.messageBox}>
         <Text style={styles.messageText}>{alertData.message}</Text>
 
-        {/* Date and Time with Icons */}
+        {/* Date and Time*/}
         {alertData.date && (
           <View style={styles.dateTimeRow}>
             <FontAwesome name="calendar" size={18} color={colors.primary} style={styles.icon} />
@@ -112,6 +113,7 @@ const AlertDetail = () => {
           </View>
         )}
 
+        {/* If alert type is event, show bookmark button */}
         {alertData.type === 'event' && (
         <TouchableOpacity
             style={[styles.bellIcon, isBookmarked && { backgroundColor: colors.primary }]}
@@ -146,10 +148,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 2,
-    marginBottom: 0,  // Space before message text
+    marginBottom: 0,  
   },
   typeBadge: {
-    backgroundColor: '#e0f2fe', // Light blue background for the type
+    backgroundColor: '#e0f2fe', 
     borderRadius: 12,
     paddingVertical: 4,
     paddingHorizontal: 8,
@@ -157,7 +159,7 @@ const styles = StyleSheet.create({
   },
   typeText: {
     fontSize: 18,
-    color: colors.primary,  // Your primary color for text
+    color: colors.primary,
     fontWeight: '600',
   },
   messageBox: {
@@ -171,32 +173,32 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
     marginBottom: 20,
-    minHeight: 100,  // Minimum height added
+    minHeight: 100,  
   },
   messageText: {
     fontSize: 16,
     color: '#333',
-    marginBottom: 15, // Added space between the message and date/time
+    marginBottom: 15, 
   },
   text: {
     fontSize: 16,
     color: '#6b7280',
-    marginRight: 10, // Space between the icons and the text
+    marginRight: 10, 
   },
   dateTimeRow: {
     flexDirection: 'row',
-    justifyContent: 'center',  // Center the date and time section
-    alignItems: 'center',      // Aligning icons and text vertically centered
-    marginTop: 10,             // Space before the date/time section
+    justifyContent: 'center',  
+    alignItems: 'center',  
+    marginTop: 10,  
   },
   icon: {
-    marginRight: 8,  // Space between icon and text
+    marginRight: 8,
   },
   bellIcon: {
     padding: 15,
     backgroundColor: '#e0f2fe',
     borderRadius: 30,
-    alignSelf: 'center', // Centers the bell icon
+    alignSelf: 'center', 
     marginVertical: 40,
   },
 });
