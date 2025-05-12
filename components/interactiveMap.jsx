@@ -15,7 +15,12 @@ const floorDataMap = {
 const InteractiveMap = forwardRef((props, ref) => {
   const mapRef = useRef();
   //const [userLocation, setUserLocation] = useState(null);
-  const userLocation = {latitude: 26.047974,longitude: 50.510879};
+
+  {/*Fixed userlocation for testing*/}
+  const userLocation = {latitude: 26.047761,longitude: 50.509834};
+  //const userLocation = {latitude: 26.047503,longitude: 50.510209};
+  //const userLocation = {latitude: 26.047974,longitude: 50.510879}; 
+  
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [showDirections, setShowDirections] = useState(false);
   const [pathCoords, setPathCoords] = useState([]);
