@@ -121,56 +121,65 @@ const InteractiveMap = forwardRef((props, ref) => {
     return closest;
   };
   
+  // distance between two points
   const euclideanDistance = (a, b) => {
     return Math.sqrt(Math.pow(b.latitude - a.latitude, 2) + Math.pow(b.longitude - a.longitude, 2));
   };
   
   // A star algorthim to find shortest path from user's location to selected room
-const aStar = (graph, startKey, goalKey) => {
-  const openSet = [startKey];
-  const cameFrom = {};
-  const gScore = { [startKey]: 0 };
-  const fScore = {
-    [startKey]: euclideanDistance(fromKey(startKey), fromKey(goalKey))
+  const aStar = (graph, startKey, goalKey) => {
+    const openSet = [startKey];
+    const closedSet = new Set(); 
+    const cameFrom = {};
+    const gScore = { [startKey]: 0 };
+    const fScore = {
+      [startKey]: euclideanDistance(fromKey(startKey), fromKey(goalKey))
+    };
+    
+    // Select the node with the lowest estimated total cost (fScore)
+    while (openSet.length > 0) {
+      const current = openSet.reduce((lowest, node) => (
+        fScore[node] < fScore[lowest] ? node : lowest
+      ), openSet[0]);
+
+      // If the goal is reached, reconstruct and return the optimal path
+      if (current === goalKey) {
+        const path = [];
+        let currentNode = goalKey;
+        while (currentNode !== startKey) {
+          path.push(fromKey(currentNode));
+          currentNode = cameFrom[currentNode];
+        }
+        path.push(fromKey(startKey));
+        return path.reverse();
+      }
+
+      // Move the current node from openSet to closedSet
+      openSet.splice(openSet.indexOf(current), 1);
+      closedSet.add(current); 
+
+      // Check all neighboring nodes
+      for (const neighborKey of graph[current] || []) {
+        // Skip already evaluated neighbors
+        if (closedSet.has(neighborKey)) continue; 
+
+        // Calculate tentative cost from start to neighbor through current
+        const tentativeG = gScore[current] + euclideanDistance(fromKey(current), fromKey(neighborKey));
+
+        // If this path to neighbor is better than any previous one, record it
+        if (!(neighborKey in gScore) || tentativeG < gScore[neighborKey]) {
+          cameFrom[neighborKey] = current;
+          gScore[neighborKey] = tentativeG;
+          fScore[neighborKey] = tentativeG + euclideanDistance(fromKey(neighborKey), fromKey(goalKey));
+
+          // Add neighbor to openSet if not already present
+          if (!openSet.includes(neighborKey)) openSet.push(neighborKey);
+        }
+      }
+    }
+
+    return [];
   };
-  const closedSet = new Set(); // NEW: Set of evaluated nodes
-
-  while (openSet.length > 0) {
-    const current = openSet.reduce((lowest, node) => (
-      fScore[node] < fScore[lowest] ? node : lowest
-    ), openSet[0]);
-
-    if (current === goalKey) {
-      const path = [];
-      let currentNode = goalKey;
-      while (currentNode !== startKey) {
-        path.push(fromKey(currentNode));
-        currentNode = cameFrom[currentNode];
-      }
-      path.push(fromKey(startKey));
-      return path.reverse();
-    }
-
-    openSet.splice(openSet.indexOf(current), 1);
-    closedSet.add(current); // Mark current as evaluated
-
-    for (const neighborKey of graph[current] || []) {
-      if (closedSet.has(neighborKey)) continue; // Skip already evaluated nodes
-
-      const tentativeG = gScore[current] + euclideanDistance(fromKey(current), fromKey(neighborKey));
-
-      if (!(neighborKey in gScore) || tentativeG < gScore[neighborKey]) {
-        cameFrom[neighborKey] = current;
-        gScore[neighborKey] = tentativeG;
-        fScore[neighborKey] = tentativeG + euclideanDistance(fromKey(neighborKey), fromKey(goalKey));
-
-        if (!openSet.includes(neighborKey)) openSet.push(neighborKey);
-      }
-    }
-  }
-
-  return []; // No path found
-};
 
 
   // Zoom to room function to use from other components
